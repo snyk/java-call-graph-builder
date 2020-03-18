@@ -1,0 +1,9 @@
+{
+  "extends": ["tslint:recommended", "tslint-config-prettier"],
+  "rules": {
+    "triple-equals": true,
+    "curly": true,
+    "interface-name": false,
+    "ordered-imports": false
+  }
+}
