@@ -3,6 +3,7 @@ import { execute } from './sub-process';
 import {fetch} from './fetch-snyk-wala-analyzer';
 
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function getJavaCommandArgs(classPath: string, jarPath: string, targetPath = '.'): string[] {
   // TODO return parameters according to the Wala jar
   throw new Error('Not implemented');
@@ -12,6 +13,7 @@ async function runJavaCommand(javaCommandArgs: string[], targetPath?: string): P
   return execute('java', javaCommandArgs, {cwd: targetPath});
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function parseJavaCommandOutput(javaCommandOutput: string): unknown {
   // TODO implement based on the results from Wala call
   throw new Error('Not implemented');

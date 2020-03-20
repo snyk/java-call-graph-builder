@@ -47,7 +47,6 @@ async function downloadAnalyzer(localPath: string): Promise<string> {
           }
 
           if (ciInfo.isCI) {
-            // eslint-disable-next-line no-console
             console.log(`downloading ${getBinaryName()} ...`);
           } else {
             const total = parseInt(res.headers['content-length'], 10);
