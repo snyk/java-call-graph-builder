@@ -1,8 +1,9 @@
 import 'source-map-support/register';
 import { execute } from './sub-process';
+import {fetch} from './fetch-snyk-wala-analyzer';
 
 
-export function getJavaCommandArgs(classPath: string, targetPath = '.'): string[] {
+export function getJavaCommandArgs(classPath: string, jarPath: string, targetPath = '.'): string[] {
   // TODO return parameters according to the Wala jar
   throw new Error('Not implemented');
 }
@@ -18,10 +19,11 @@ export function parseJavaCommandOutput(javaCommandOutput: string): unknown {
 
 
 export async function getCallGraph(classPath: string, targetPath?: string): Promise<unknown> {
-  const javaCommandArgs = getJavaCommandArgs(classPath, targetPath);
+  const jarPath = await fetch();
+  const javaCommandArgs = getJavaCommandArgs(classPath, jarPath, targetPath);
   try {
     const javaOutput = await runJavaCommand(javaCommandArgs, targetPath);
-    return  parseJavaCommandOutput(javaOutput);
+    return parseJavaCommandOutput(javaOutput);
   } catch(e) {
     throw new Error(`java command 'java ${javaCommandArgs.join(' ')} failed with error: ${e}`);
   }
