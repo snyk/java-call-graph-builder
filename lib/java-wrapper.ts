@@ -1,7 +1,7 @@
 import 'source-map-support/register';
 import { execute } from './sub-process';
 import {fetch} from './fetch-snyk-wala-analyzer';
-
+import * as config from './config';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function getJavaCommandArgs(classPath: string, jarPath: string, targetPath = '.'): string[] {
@@ -21,7 +21,7 @@ export function parseJavaCommandOutput(javaCommandOutput: string): unknown {
 
 
 export async function getCallGraph(classPath: string, targetPath?: string): Promise<unknown> {
-  const jarPath = await fetch();
+  const jarPath = await fetch(config.CALL_GRAPH_GENERATOR_URL, config.CALL_GRAPH_GENERATOR_CHECKSUM);
   const javaCommandArgs = getJavaCommandArgs(classPath, jarPath, targetPath);
   try {
     const javaOutput = await runJavaCommand(javaCommandArgs, targetPath);

@@ -5,17 +5,12 @@ import * as needle from 'needle';
 import * as ciInfo from 'ci-info';
 import * as ProgressBar from 'progress';
 import * as tempDir from 'temp-dir';
-
-export function getVersion(): string {
-  const pkgInfo = JSON.parse(fs.readFileSync(path.join(__dirname, '../package.json'),'utf-8'));
-  return pkgInfo['snyk-wala-analyzer-version'];
-}
+import * as crypto from 'crypto';
+import ReadableStream = NodeJS.ReadableStream;
 
 export function getBinaryName(): string {
   return 'java-call-graph-generator.jar';
 }
-
-const DOWNLOAD_URL = `https://snyk.io/resources/cli/plugins/wala-analyzer/${getVersion()}/${getBinaryName()}`; // jscs:ignore maximumLineLength
 
 function getBinaryLocalPath(): string {
   const name = getBinaryName();
@@ -31,23 +26,26 @@ function createProgressBar(total: number, name: string): ProgressBar {
   });
 }
 
-async function downloadAnalyzer(localPath: string): Promise<string> {
+async function downloadAnalyzer(url: string, localPath: string, expectedChecksum: string): Promise<string> {
   return new Promise((resolve, reject) => {
     const fsStream = fs.createWriteStream(localPath + '.part');
-    let bar: ProgressBar;
     try {
-      const req = needle.get(DOWNLOAD_URL);
+      let progressBar: ProgressBar;
+      const req = needle.get(url);
+      let matchChecksum: Promise<boolean>;
+      let hasError = false;
       req
-        .on('response', (res) => {
+        .on('response', async (res) => {
+          matchChecksum = verifyChecksum(req, expectedChecksum);
           if (res.statusCode >= 400) {
             const err = new Error(
               'Bad HTTP response for snyk-wala-analyzer download');
             // TODO: add custom error for status code
             // err.statusCode = res.statusCode;
             fsStream.destroy();
+            hasError = true;
             return reject(err);
           }
-
           if (ciInfo.isCI) {
             console.log(`downloading ${getBinaryName()} ...`);
           } else {
@@ -68,11 +66,16 @@ async function downloadAnalyzer(localPath: string): Promise<string> {
           fsStream.destroy();
           return reject(err);
         })
-        .on('finish', () => {
-          fs.renameSync(localPath + '.part', localPath);
-          const CHMOD_WITH_EXEC = '0755';
-          fs.chmodSync(localPath, CHMOD_WITH_EXEC);
-          resolve(localPath);
+        .on('finish', async () => {
+          if (hasError) {
+            fs.unlinkSync(localPath + '.part');
+          } else {
+            if (!await matchChecksum) {
+              return reject(new Error("Wrong checksum of downloaded call-graph-generator."));
+            }
+            fs.renameSync(localPath + '.part', localPath);
+            resolve(localPath);
+          }
         })
     } catch (err) {
       reject(err);
@@ -80,12 +83,27 @@ async function downloadAnalyzer(localPath: string): Promise<string> {
   })
 }
 
-export async function fetch(): Promise<string> {
+export async function verifyChecksum(localPathStream: ReadableStream, expectedChecksum: string): Promise<boolean> {
+  return new Promise((resolve, reject) => {
+    const hash = crypto.createHash('sha256');
+    localPathStream
+      .on('error', reject)
+      .pipe(hash)
+      .on('finish', () => {
+        resolve(hash.digest('hex') === expectedChecksum);
+      });
+  });
+}
+
+export async function fetch(url: string, expectedChecksum: string): Promise<string> {
   const localPath = getBinaryLocalPath();
   if (fs.existsSync(localPath)) {
-    return Promise.resolve(localPath);
+    if (await verifyChecksum(fs.createReadStream(localPath), expectedChecksum)) {
+      return Promise.resolve(localPath);
+    }
+    console.log(`New version of ${getBinaryName()} available`)
   }
   fsExtra.ensureDirSync(path.dirname(localPath));
 
-  return downloadAnalyzer(getBinaryLocalPath());
+  return await downloadAnalyzer(url, localPath, expectedChecksum);
 }
