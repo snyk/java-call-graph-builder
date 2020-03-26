@@ -1,4 +1,3 @@
-import * as os from 'os';
 import * as fs from 'fs';
 import * as fsExtra from 'fs-extra';
 import * as path from 'path';
@@ -13,20 +12,23 @@ export function getVersion(): string {
 }
 
 export function getBinaryName(): string {
-  const arch = os.arch();
-  if (arch !== 'x64') {
-    throw new Error(`Unsupported arch ${arch} - only amd64 is supported`);
-  }
-
-  return `snyk-wala-analyzer.jar`;
+  return 'java-call-graph-generator.jar';
 }
 
 const DOWNLOAD_URL = `https://snyk.io/resources/cli/plugins/wala-analyzer/${getVersion()}/${getBinaryName()}`; // jscs:ignore maximumLineLength
 
 function getBinaryLocalPath(): string {
   const name = getBinaryName();
-  const version = getVersion();
-  return path.join(tempDir, 'snyk-wala-analyzer', version, name);
+  return path.join(tempDir, 'call-graph-generator', name);
+}
+
+function createProgressBar(total: number, name: string): ProgressBar {
+  return new ProgressBar(`downloading ${name} [:bar] :rate/Kbps :percent :etas remaining`, { // jscs:ignore maximumLineLength
+    complete: '=',
+    incomplete: '.',
+    width: 20,
+    total: total / 1000,
+  });
 }
 
 async function downloadAnalyzer(localPath: string): Promise<string> {
@@ -50,17 +52,12 @@ async function downloadAnalyzer(localPath: string): Promise<string> {
             console.log(`downloading ${getBinaryName()} ...`);
           } else {
             const total = parseInt(res.headers['content-length'], 10);
-            bar = new ProgressBar(`downloading ${getBinaryName()} [:bar] :rate/Kbps :percent :etas remaining`, { // jscs:ignore maximumLineLength
-              complete: '=',
-              incomplete: '.',
-              width: 20,
-              total: total / 1000,
-            });
+            progressBar = createProgressBar(total, getBinaryName());
           }
         })
         .on('data', (chunk) => {
-          if (bar) {
-            bar.tick(chunk.length / 1000);
+          if (progressBar) {
+            progressBar.tick(chunk.length / 1000);
           }
         })
         .on('error',(err) => {

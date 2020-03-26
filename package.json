@@ -30,7 +30,6 @@
     "dist"
   ],
   "homepage": "https://github.com/snyk/java-call-graph-builder#readme",
-  "snyk-wala-analyzer-version": "alpha",
   "dependencies": {
     "lodash": "^4.17.11",
     "source-map-support": "^0.5.7",
@@ -39,7 +38,8 @@
     "temp-dir": "^2.0.0",
     "needle": "^2.3.3",
     "fs-extra": "^9.0.0",
-    "nock": "^11.9.1"
+    "nock": "^11.9.1",
+    "snyk-config": "^3.0.0"
   },
   "devDependencies": {
     "@types/jest": "^24.9.1",
