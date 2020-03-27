@@ -5,11 +5,13 @@ import * as path from 'path';
 import * as tempDir from 'temp-dir';
 import * as needle from 'needle';
 
+import * as promisifiedFs from '../../lib/promisified-fs';
+
 nock.disableNetConnect();
 const tmpPath = path.join(
   tempDir,
   'call-graph-generator',
-  fetchSnykWalaAnalyzer.getBinaryName(),
+  fetchSnykWalaAnalyzer.JAR_NAME,
 );
 
 beforeEach(async () => {
@@ -40,7 +42,7 @@ test('analyzer is fetched when does not exist', async () => {
 });
 
 test('analyzer is not fetched when actual version is available', async () => {
-  jest.spyOn(fs, 'existsSync').mockReturnValue(true);
+  jest.spyOn(promisifiedFs, 'exists').mockResolvedValue(true);
   jest
     .spyOn(fs, 'createReadStream')
     .mockReturnValue(
@@ -56,7 +58,7 @@ test('analyzer is not fetched when actual version is available', async () => {
 });
 
 test('analyzer is fetched when older version is available', async () => {
-  jest.spyOn(fs, 'existsSync').mockReturnValue(true);
+  jest.spyOn(promisifiedFs, 'exists').mockResolvedValue(true);
   jest
     .spyOn(fs, 'createReadStream')
     .mockReturnValueOnce(

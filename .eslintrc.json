@@ -1,9 +1,8 @@
 {
   "parser": "@typescript-eslint/parser",
-  // Pending https://github.com/typescript-eslint/typescript-eslint/issues/389
-  // parserOptions: {
-  //   project: './tsconfig.json',
-  // },
+  "parserOptions": {
+    "project": "./tsconfig.json"
+  },
   "env": {
     "node": true,
     "es6": true,
