@@ -1,0 +1,419 @@
+{
+  "options": {
+    "directed": true,
+    "multigraph": false,
+    "compound": false
+  },
+  "nodes": [
+    {
+      "v": "com/ibm/wala/FakeRootClass.fakeRootMethod",
+      "value": {
+        "className": "com/ibm/wala/FakeRootClass",
+        "functionName": "fakeRootMethod"
+      }
+    },
+    {
+      "v": "com/ibm/wala/FakeRootClass.fakeWorldClinit",
+      "value": {
+        "className": "com/ibm/wala/FakeRootClass",
+        "functionName": "fakeWorldClinit"
+      }
+    },
+    {
+      "v": "com/equalinformation/bpm/poc/producer1/MyUI$MyUIServlet.\"<init>\"",
+      "value": {
+        "className": "com/equalinformation/bpm/poc/producer1/MyUI$MyUIServlet",
+        "functionName": "\"<init>\""
+      }
+    },
+    {
+      "v": "com/equalinformation/bpm/poc/producer1/MyUI.\"<init>\"",
+      "value": {
+        "className": "com/equalinformation/bpm/poc/producer1/MyUI",
+        "functionName": "\"<init>\""
+      }
+    },
+    {
+      "v": "java/lang/Object.\"<init>\"",
+      "value": {
+        "className": "java/lang/Object",
+        "functionName": "\"<init>\""
+      }
+    },
+    {
+      "v": "com/equalinformation/bpm/poc/producer1/MyUI$1.buttonClick",
+      "value": {
+        "className": "com/equalinformation/bpm/poc/producer1/MyUI$1",
+        "functionName": "buttonClick"
+      }
+    },
+    {
+      "v": "com/vaadin/ui/VerticalLayout.\"<init>\"",
+      "value": {
+        "className": "com/vaadin/ui/VerticalLayout",
+        "functionName": "\"<init>\""
+      }
+    },
+    {
+      "v": "com/equalinformation/bpm/poc/producer1/MyUI$1.\"<init>\"",
+      "value": {
+        "className": "com/equalinformation/bpm/poc/producer1/MyUI$1",
+        "functionName": "\"<init>\""
+      }
+    },
+    {
+      "v": "com/equalinformation/bpm/poc/producer1/MyUI.init",
+      "value": {
+        "className": "com/equalinformation/bpm/poc/producer1/MyUI",
+        "functionName": "init"
+      }
+    },
+    {
+      "v": "java/lang/Enum.finalize",
+      "value": {
+        "className": "java/lang/Enum",
+        "functionName": "finalize"
+      }
+    },
+    {
+      "v": "com/vaadin/server/VaadinServlet.\"<clinit>\"",
+      "value": {
+        "className": "com/vaadin/server/VaadinServlet",
+        "functionName": "\"<clinit>\""
+      }
+    },
+    {
+      "v": "javax/servlet/http/HttpServlet.\"<clinit>\"",
+      "value": {
+        "className": "javax/servlet/http/HttpServlet",
+        "functionName": "\"<clinit>\""
+      }
+    },
+    {
+      "v": "javax/servlet/GenericServlet.\"<clinit>\"",
+      "value": {
+        "className": "javax/servlet/GenericServlet",
+        "functionName": "\"<clinit>\""
+      }
+    },
+    {
+      "v": "java/lang/Object.\"<clinit>\"",
+      "value": {
+        "className": "java/lang/Object",
+        "functionName": "\"<clinit>\""
+      }
+    },
+    {
+      "v": "com/vaadin/ui/UI.\"<clinit>\"",
+      "value": {
+        "className": "com/vaadin/ui/UI",
+        "functionName": "\"<clinit>\""
+      }
+    },
+    {
+      "v": "com/vaadin/ui/AbstractComponent.\"<clinit>\"",
+      "value": {
+        "className": "com/vaadin/ui/AbstractComponent",
+        "functionName": "\"<clinit>\""
+      }
+    },
+    {
+      "v": "com/vaadin/server/AbstractClientConnector.\"<clinit>\"",
+      "value": {
+        "className": "com/vaadin/server/AbstractClientConnector",
+        "functionName": "\"<clinit>\""
+      }
+    },
+    {
+      "v": "com/vaadin/ui/AbstractOrderedLayout.\"<clinit>\"",
+      "value": {
+        "className": "com/vaadin/ui/AbstractOrderedLayout",
+        "functionName": "\"<clinit>\""
+      }
+    },
+    {
+      "v": "java/util/HashSet.\"<clinit>\"",
+      "value": {
+        "className": "java/util/HashSet",
+        "functionName": "\"<clinit>\""
+      }
+    },
+    {
+      "v": "java/util/concurrent/ConcurrentHashMap.\"<clinit>\"",
+      "value": {
+        "className": "java/util/concurrent/ConcurrentHashMap",
+        "functionName": "\"<clinit>\""
+      }
+    },
+    {
+      "v": "com/vaadin/ui/Label.\"<clinit>\"",
+      "value": {
+        "className": "com/vaadin/ui/Label",
+        "functionName": "\"<clinit>\""
+      }
+    },
+    {
+      "v": "com/vaadin/ui/Alignment.\"<clinit>\"",
+      "value": {
+        "className": "com/vaadin/ui/Alignment",
+        "functionName": "\"<clinit>\""
+      }
+    },
+    {
+      "v": "java/lang/Integer.\"<clinit>\"",
+      "value": {
+        "className": "java/lang/Integer",
+        "functionName": "\"<clinit>\""
+      }
+    },
+    {
+      "v": "java/lang/Throwable.\"<clinit>\"",
+      "value": {
+        "className": "java/lang/Throwable",
+        "functionName": "\"<clinit>\""
+      }
+    },
+    {
+      "v": "com/vaadin/shared/ui/label/ContentMode.\"<clinit>\"",
+      "value": {
+        "className": "com/vaadin/shared/ui/label/ContentMode",
+        "functionName": "\"<clinit>\""
+      }
+    },
+    {
+      "v": "com/vaadin/ui/Button$ClickListener.\"<clinit>\"",
+      "value": {
+        "className": "com/vaadin/ui/Button$ClickListener",
+        "functionName": "\"<clinit>\""
+      }
+    },
+    {
+      "v": "java/util/ArrayList.\"<clinit>\"",
+      "value": {
+        "className": "java/util/ArrayList",
+        "functionName": "\"<clinit>\""
+      }
+    },
+    {
+      "v": "com/vaadin/server/VaadinServlet.\"<init>\"",
+      "value": {
+        "className": "com/vaadin/server/VaadinServlet",
+        "functionName": "\"<init>\""
+      }
+    },
+    {
+      "v": "com/vaadin/ui/UI.\"<init>\"",
+      "value": {
+        "className": "com/vaadin/ui/UI",
+        "functionName": "\"<init>\""
+      }
+    },
+    {
+      "v": "com/vaadin/ui/Label.\"<init>\"",
+      "value": {
+        "className": "com/vaadin/ui/Label",
+        "functionName": "\"<init>\""
+      }
+    },
+    {
+      "v": "com/vaadin/ui/AbstractOrderedLayout.addComponent",
+      "value": {
+        "className": "com/vaadin/ui/AbstractOrderedLayout",
+        "functionName": "addComponent"
+      }
+    },
+    {
+      "v": "com/vaadin/ui/AbstractOrderedLayout.setMargin",
+      "value": {
+        "className": "com/vaadin/ui/AbstractOrderedLayout",
+        "functionName": "setMargin"
+      }
+    },
+    {
+      "v": "com/vaadin/ui/UI.setContent",
+      "value": {
+        "className": "com/vaadin/ui/UI",
+        "functionName": "setContent"
+      }
+    },
+    {
+      "v": "com/vaadin/ui/Button.\"<init>\"",
+      "value": {
+        "className": "com/vaadin/ui/Button",
+        "functionName": "\"<init>\""
+      }
+    },
+    {
+      "v": "com/vaadin/ui/Button.addClickListener",
+      "value": {
+        "className": "com/vaadin/ui/Button",
+        "functionName": "addClickListener"
+      }
+    },
+    {
+      "v": "com/vaadin/util/ReflectTools.findMethod",
+      "value": {
+        "className": "com/vaadin/util/ReflectTools",
+        "functionName": "findMethod"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "v": "com/ibm/wala/FakeRootClass.fakeRootMethod",
+      "w": "com/ibm/wala/FakeRootClass.fakeWorldClinit"
+    },
+    {
+      "v": "com/ibm/wala/FakeRootClass.fakeRootMethod",
+      "w": "com/equalinformation/bpm/poc/producer1/MyUI$MyUIServlet.\"<init>\""
+    },
+    {
+      "v": "com/ibm/wala/FakeRootClass.fakeRootMethod",
+      "w": "com/equalinformation/bpm/poc/producer1/MyUI.\"<init>\""
+    },
+    {
+      "v": "com/ibm/wala/FakeRootClass.fakeRootMethod",
+      "w": "java/lang/Object.\"<init>\""
+    },
+    {
+      "v": "com/ibm/wala/FakeRootClass.fakeRootMethod",
+      "w": "com/equalinformation/bpm/poc/producer1/MyUI$1.buttonClick"
+    },
+    {
+      "v": "com/ibm/wala/FakeRootClass.fakeRootMethod",
+      "w": "com/vaadin/ui/VerticalLayout.\"<init>\""
+    },
+    {
+      "v": "com/ibm/wala/FakeRootClass.fakeRootMethod",
+      "w": "com/equalinformation/bpm/poc/producer1/MyUI$1.\"<init>\""
+    },
+    {
+      "v": "com/ibm/wala/FakeRootClass.fakeRootMethod",
+      "w": "com/equalinformation/bpm/poc/producer1/MyUI.init"
+    },
+    {
+      "v": "com/ibm/wala/FakeRootClass.fakeRootMethod",
+      "w": "java/lang/Enum.finalize"
+    },
+    {
+      "v": "com/ibm/wala/FakeRootClass.fakeWorldClinit",
+      "w": "com/vaadin/server/VaadinServlet.\"<clinit>\""
+    },
+    {
+      "v": "com/ibm/wala/FakeRootClass.fakeWorldClinit",
+      "w": "javax/servlet/http/HttpServlet.\"<clinit>\""
+    },
+    {
+      "v": "com/ibm/wala/FakeRootClass.fakeWorldClinit",
+      "w": "javax/servlet/GenericServlet.\"<clinit>\""
+    },
+    {
+      "v": "com/ibm/wala/FakeRootClass.fakeWorldClinit",
+      "w": "java/lang/Object.\"<clinit>\""
+    },
+    {
+      "v": "com/ibm/wala/FakeRootClass.fakeWorldClinit",
+      "w": "com/vaadin/ui/UI.\"<clinit>\""
+    },
+    {
+      "v": "com/ibm/wala/FakeRootClass.fakeWorldClinit",
+      "w": "com/vaadin/ui/AbstractComponent.\"<clinit>\""
+    },
+    {
+      "v": "com/ibm/wala/FakeRootClass.fakeWorldClinit",
+      "w": "com/vaadin/server/AbstractClientConnector.\"<clinit>\""
+    },
+    {
+      "v": "com/ibm/wala/FakeRootClass.fakeWorldClinit",
+      "w": "com/vaadin/ui/AbstractOrderedLayout.\"<clinit>\""
+    },
+    {
+      "v": "com/ibm/wala/FakeRootClass.fakeWorldClinit",
+      "w": "java/util/HashSet.\"<clinit>\""
+    },
+    {
+      "v": "com/ibm/wala/FakeRootClass.fakeWorldClinit",
+      "w": "java/util/concurrent/ConcurrentHashMap.\"<clinit>\""
+    },
+    {
+      "v": "com/ibm/wala/FakeRootClass.fakeWorldClinit",
+      "w": "com/vaadin/ui/Label.\"<clinit>\""
+    },
+    {
+      "v": "com/ibm/wala/FakeRootClass.fakeWorldClinit",
+      "w": "com/vaadin/ui/Alignment.\"<clinit>\""
+    },
+    {
+      "v": "com/ibm/wala/FakeRootClass.fakeWorldClinit",
+      "w": "java/lang/Integer.\"<clinit>\""
+    },
+    {
+      "v": "com/ibm/wala/FakeRootClass.fakeWorldClinit",
+      "w": "java/lang/Throwable.\"<clinit>\""
+    },
+    {
+      "v": "com/ibm/wala/FakeRootClass.fakeWorldClinit",
+      "w": "com/vaadin/shared/ui/label/ContentMode.\"<clinit>\""
+    },
+    {
+      "v": "com/ibm/wala/FakeRootClass.fakeWorldClinit",
+      "w": "com/vaadin/ui/Button$ClickListener.\"<clinit>\""
+    },
+    {
+      "v": "com/ibm/wala/FakeRootClass.fakeWorldClinit",
+      "w": "java/util/ArrayList.\"<clinit>\""
+    },
+    {
+      "v": "com/equalinformation/bpm/poc/producer1/MyUI$MyUIServlet.\"<init>\"",
+      "w": "com/vaadin/server/VaadinServlet.\"<init>\""
+    },
+    {
+      "v": "com/equalinformation/bpm/poc/producer1/MyUI.\"<init>\"",
+      "w": "com/vaadin/ui/UI.\"<init>\""
+    },
+    {
+      "v": "com/equalinformation/bpm/poc/producer1/MyUI$1.buttonClick",
+      "w": "com/vaadin/ui/Label.\"<init>\""
+    },
+    {
+      "v": "com/equalinformation/bpm/poc/producer1/MyUI$1.buttonClick",
+      "w": "com/vaadin/ui/AbstractOrderedLayout.addComponent"
+    },
+    {
+      "v": "com/equalinformation/bpm/poc/producer1/MyUI$1.\"<init>\"",
+      "w": "java/lang/Object.\"<init>\""
+    },
+    {
+      "v": "com/equalinformation/bpm/poc/producer1/MyUI.init",
+      "w": "com/vaadin/ui/VerticalLayout.\"<init>\""
+    },
+    {
+      "v": "com/equalinformation/bpm/poc/producer1/MyUI.init",
+      "w": "com/equalinformation/bpm/poc/producer1/MyUI$1.\"<init>\""
+    },
+    {
+      "v": "com/equalinformation/bpm/poc/producer1/MyUI.init",
+      "w": "com/vaadin/ui/AbstractOrderedLayout.setMargin"
+    },
+    {
+      "v": "com/equalinformation/bpm/poc/producer1/MyUI.init",
+      "w": "com/vaadin/ui/UI.setContent"
+    },
+    {
+      "v": "com/equalinformation/bpm/poc/producer1/MyUI.init",
+      "w": "com/vaadin/ui/Button.\"<init>\""
+    },
+    {
+      "v": "com/equalinformation/bpm/poc/producer1/MyUI.init",
+      "w": "com/vaadin/ui/Button.addClickListener"
+    },
+    {
+      "v": "com/equalinformation/bpm/poc/producer1/MyUI.init",
+      "w": "com/vaadin/ui/AbstractOrderedLayout.addComponent"
+    },
+    {
+      "v": "com/vaadin/ui/Button$ClickListener.\"<clinit>\"",
+      "w": "com/vaadin/util/ReflectTools.findMethod"
+    }
+  ]
+}

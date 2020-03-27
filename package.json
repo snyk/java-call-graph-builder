@@ -31,6 +31,7 @@
   ],
   "homepage": "https://github.com/snyk/java-call-graph-builder#readme",
   "dependencies": {
+    "graphlib": "^2.1.8",
     "lodash": "^4.17.11",
     "source-map-support": "^0.5.7",
     "tslib": "^1.9.3",
@@ -42,6 +43,7 @@
     "snyk-config": "^3.0.0"
   },
   "devDependencies": {
+    "@types/graphlib": "^2.1.5",
     "@types/jest": "^24.9.1",
     "@types/lodash": "^4.14.116",
     "@types/node": "^8.10.59",
