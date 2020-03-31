@@ -1,4 +1,4 @@
-import { parseJavaCommandOutput } from '../../lib/java-wrapper';
+import { buildCallGraph } from '../../lib/call-graph';
 import { promisify } from 'util';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -17,6 +17,6 @@ test('parse example call graph', async () => {
       'utf-8',
     ),
   );
-  const res = parseJavaCommandOutput(callGraph);
+  const res = buildCallGraph(callGraph);
   expect(graphlib.json.write(res)).toEqual(expectedCallGraph);
 });
