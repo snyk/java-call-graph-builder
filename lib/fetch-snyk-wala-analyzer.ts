@@ -18,7 +18,6 @@ function createProgressBar(total: number, name: string): ProgressBar {
   return new ProgressBar(
     `downloading ${name} [:bar] :rate/Kbps :percent :etas remaining`,
     {
-      // jscs:ignore maximumLineLength
       complete: '=',
       incomplete: '.',
       width: 20,

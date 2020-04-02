@@ -1,6 +1,5 @@
 import 'source-map-support/register';
 
-import * as path from 'path';
 import * as jszip from 'jszip';
 import * as config from './config';
 
@@ -33,10 +32,9 @@ export async function getClassPerJarMapping(
   classPath: string,
 ): Promise<{ [index: string]: string }> {
   const classPerJarMapping: { [index: string]: string } = {};
-  for (const jarLocation of classPath.split(':')) {
-    const jarFileContent = await readFile(jarLocation);
+  for (const jar of classPath.split(':')) {
+    const jarFileContent = await readFile(jar);
     const jarContent = await jszip.loadAsync(jarFileContent);
-    const jar = path.parse(jarLocation).base;
     for (const classFile of Object.keys(jarContent.files).filter((name) =>
       name.endsWith('.class'),
     )) {
