@@ -5,28 +5,39 @@ import * as jszip from 'jszip';
 import * as config from './config';
 
 import { execute } from './sub-process';
-import {fetch} from './fetch-snyk-wala-analyzer';
+import { fetch } from './fetch-snyk-wala-analyzer';
 import { buildCallGraph } from './call-graph';
 import { readFile } from './promisified-fs';
 import { toFQclassName } from './class-parsing';
 import { Graph } from 'graphlib';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function getJavaCommandArgs(classPath: string, jarPath: string, targetPath = '.'): string[] {
+export function getJavaCommandArgs(
+  classPath: string,
+  jarPath: string,
+  targetPath = '.',
+): string[] {
   // TODO return parameters according to the Wala jar
   throw new Error('Not implemented');
 }
 
-async function runJavaCommand(javaCommandArgs: string[], targetPath?: string): Promise<string> {
-  return execute('java', javaCommandArgs, {cwd: targetPath});
+async function runJavaCommand(
+  javaCommandArgs: string[],
+  targetPath?: string,
+): Promise<string> {
+  return execute('java', javaCommandArgs, { cwd: targetPath });
 }
 
-export async function getClassPerJarMapping(classPath: string): Promise<{[index: string]: string}> {
-  const classPerJarMapping: {[index: string]: string} = {};
+export async function getClassPerJarMapping(
+  classPath: string,
+): Promise<{ [index: string]: string }> {
+  const classPerJarMapping: { [index: string]: string } = {};
   for (const jar of classPath.split(':')) {
     const jarFileContent = await readFile(jar);
     const jarContent = await jszip.loadAsync(jarFileContent);
-    for (const classFile of Object.keys(jarContent.files).filter((name) => name.endsWith('.class'))) {
+    for (const classFile of Object.keys(jarContent.files).filter((name) =>
+      name.endsWith('.class'),
+    )) {
       const className = toFQclassName(classFile.replace('.class', '')); // removing .class from name
       classPerJarMapping[className] = path.parse(jar).base;
     }
@@ -34,9 +45,14 @@ export async function getClassPerJarMapping(classPath: string): Promise<{[index:
   return classPerJarMapping;
 }
 
-
-export async function getCallGraph(classPath: string, targetPath?: string): Promise<Graph> {
-  const jarPath = await fetch(config.CALL_GRAPH_GENERATOR_URL, config.CALL_GRAPH_GENERATOR_CHECKSUM);
+export async function getCallGraph(
+  classPath: string,
+  targetPath?: string,
+): Promise<Graph> {
+  const jarPath = await fetch(
+    config.CALL_GRAPH_GENERATOR_URL,
+    config.CALL_GRAPH_GENERATOR_CHECKSUM,
+  );
   const javaCommandArgs = getJavaCommandArgs(classPath, jarPath, targetPath);
   try {
     const [javaOutput, classPerJarMapping] = await Promise.all([
@@ -45,7 +61,9 @@ export async function getCallGraph(classPath: string, targetPath?: string): Prom
     ]);
 
     return buildCallGraph(javaOutput, classPerJarMapping);
-  } catch(e) {
-    throw new Error(`java command 'java ${javaCommandArgs.join(' ')} failed with error: ${e}`);
+  } catch (e) {
+    throw new Error(
+      `java command 'java ${javaCommandArgs.join(' ')} failed with error: ${e}`,
+    );
   }
 }

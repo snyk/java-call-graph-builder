@@ -6,6 +6,8 @@ interface Config {
   CALL_GRAPH_GENERATOR_CHECKSUM: string;
 }
 
-const config: Config = snykConfig.loadConfig(path.join(__dirname, '..')) as unknown as Config;
+const config: Config = (snykConfig.loadConfig(
+  path.join(__dirname, '..'),
+) as unknown) as Config;
 
 export = config;

@@ -1,7 +1,7 @@
 import 'source-map-support/register';
 import { getClassPathFromMvn } from './mvn-wrapper';
 import { getCallGraphGradle } from './gradle-wrapper';
-import {getCallGraph} from "./java-wrapper";
+import { getCallGraph } from './java-wrapper';
 import { Graph } from 'graphlib';
 
 export async function getCallGraphMvn(targetPath?: string): Promise<Graph> {
@@ -15,4 +15,3 @@ export async function getClassGraphGradle(targetPath?: string): Promise<Graph> {
 
   return await getCallGraph(classPath, targetPath);
 }
-

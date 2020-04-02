@@ -1,13 +1,15 @@
 import 'source-map-support/register';
 import { execute } from './sub-process';
 
-
 export function getMvnCommandArgs(targetPath = '.'): string[] {
   return ['dependency:build-classpath', '-f', targetPath];
 }
 
-async function runMvnCommand(mvnCommandArgs: string[], targetPath?: string): Promise<string> {
-  return execute('mvn', mvnCommandArgs, {cwd: targetPath});
+async function runMvnCommand(
+  mvnCommandArgs: string[],
+  targetPath?: string,
+): Promise<string> {
+  return execute('mvn', mvnCommandArgs, { cwd: targetPath });
 }
 
 export function parseMvnCommandOutput(mvnCommandOutput: string): string[] {
@@ -16,8 +18,8 @@ export function parseMvnCommandOutput(mvnCommandOutput: string): string[] {
   let startIndex = 0;
   let i = outputLines.indexOf('[INFO] Dependencies classpath:', startIndex);
   while (i > -1) {
-    if (outputLines[i+1] !== '') {
-      mvnClassPaths.push(outputLines[i+1]);
+    if (outputLines[i + 1] !== '') {
+      mvnClassPaths.push(outputLines[i + 1]);
     }
     startIndex = i + 2;
     i = outputLines.indexOf('[INFO] Dependencies classpath:', startIndex);
@@ -33,13 +35,17 @@ export function mergeMvnClassPaths(classPaths: string[]): string {
   return Array.from(new Set(classPaths.join(':').split(':'))).join(':');
 }
 
-export async function getClassPathFromMvn(targetPath?: string): Promise<string> {
+export async function getClassPathFromMvn(
+  targetPath?: string,
+): Promise<string> {
   const mvnCommandArgs = getMvnCommandArgs(targetPath);
   try {
     const mvnOutput = await runMvnCommand(mvnCommandArgs, targetPath);
     const classPaths = parseMvnCommandOutput(mvnOutput);
     return mergeMvnClassPaths(classPaths);
-  } catch(e) {
-    throw new Error(`mvn command 'mvn ${mvnCommandArgs.join(' ')} failed with error: ${e}`);
+  } catch (e) {
+    throw new Error(
+      `mvn command 'mvn ${mvnCommandArgs.join(' ')} failed with error: ${e}`,
+    );
   }
 }
