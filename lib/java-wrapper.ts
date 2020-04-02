@@ -15,6 +15,7 @@ import { Graph } from 'graphlib';
 export function getJavaCommandArgs(
   classPath: string,
   jarPath: string,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   targetPath = '.',
 ): string[] {
   // TODO return parameters according to the Wala jar
@@ -23,7 +24,7 @@ export function getJavaCommandArgs(
 
 async function runJavaCommand(
   javaCommandArgs: string[],
-  targetPath?: string,
+  targetPath: string,
 ): Promise<string> {
   return execute('java', javaCommandArgs, { cwd: targetPath });
 }
@@ -32,14 +33,15 @@ export async function getClassPerJarMapping(
   classPath: string,
 ): Promise<{ [index: string]: string }> {
   const classPerJarMapping: { [index: string]: string } = {};
-  for (const jar of classPath.split(':')) {
-    const jarFileContent = await readFile(jar);
+  for (const jarLocation of classPath.split(':')) {
+    const jarFileContent = await readFile(jarLocation);
     const jarContent = await jszip.loadAsync(jarFileContent);
+    const jar = path.parse(jarLocation).base;
     for (const classFile of Object.keys(jarContent.files).filter((name) =>
       name.endsWith('.class'),
     )) {
       const className = toFQclassName(classFile.replace('.class', '')); // removing .class from name
-      classPerJarMapping[className] = path.parse(jar).base;
+      classPerJarMapping[className] = jar;
     }
   }
   return classPerJarMapping;
@@ -47,7 +49,7 @@ export async function getClassPerJarMapping(
 
 export async function getCallGraph(
   classPath: string,
-  targetPath?: string,
+  targetPath: string,
 ): Promise<Graph> {
   const jarPath = await fetch(
     config.CALL_GRAPH_GENERATOR_URL,

@@ -3,7 +3,7 @@ import { execute } from './sub-process';
 import * as path from 'path';
 import * as fs from 'fs';
 
-export function getGradleCommandArgs(targetPath?: string): string[] {
+export function getGradleCommandArgs(targetPath: string): string[] {
   const gradleArgs = [
     'printClasspath',
     '-I',
@@ -17,7 +17,7 @@ export function getGradleCommandArgs(targetPath?: string): string[] {
   return gradleArgs;
 }
 
-export function getGradleCommand(targetPath?: string): string {
+export function getGradleCommand(targetPath: string): string {
   const pathToWrapper = path.resolve(targetPath || '', './gradlew');
 
   if (fs.existsSync(pathToWrapper)) {
@@ -30,12 +30,12 @@ export function getGradleCommand(targetPath?: string): string {
 async function runGradleCommand(
   gradleCommand: string,
   gradleCommandArgs: string[],
-  targetPath?: string,
+  targetPath: string,
 ): Promise<string> {
   return execute('gradle', gradleCommandArgs, { cwd: targetPath });
 }
 
-export async function getCallGraphGradle(targetPath?: string): Promise<string> {
+export async function getCallGraphGradle(targetPath: string): Promise<string> {
   const gradleCommandArgs = getGradleCommandArgs(targetPath);
   const gradleCommand = getGradleCommand(targetPath);
   try {

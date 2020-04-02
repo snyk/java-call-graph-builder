@@ -11,10 +11,4 @@ test('get right args for gradle command', async () => {
     '-p',
     'directory_name',
   ]);
-  expect(getGradleCommandArgs()).toEqual([
-    'printClasspath',
-    '-I',
-    path.join(__dirname, '../../bin/init.gradle'),
-    '-q',
-  ]);
 });
