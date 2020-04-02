@@ -1,0 +1,18 @@
+{
+  "extends": ["../.eslintrc"],
+  "overrides": [
+    {
+      "files": ["**/*.test.js"],
+      "plugins": ["mocha"],
+      "env": {
+        "mocha": true
+      }
+    },
+    {
+      "files": ["**/*.test.ts"],
+      "parserOptions": {
+        "project": "./test/tsconfig.json"
+      }
+    }
+  ]
+}

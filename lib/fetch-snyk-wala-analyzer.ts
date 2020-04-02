@@ -15,15 +15,22 @@ export const JAR_NAME = 'java-call-graph-generator.jar';
 const LOCAL_PATH = path.join(tempDir, 'call-graph-generator', JAR_NAME);
 
 function createProgressBar(total: number, name: string): ProgressBar {
-  return new ProgressBar(`downloading ${name} [:bar] :rate/Kbps :percent :etas remaining`, { // jscs:ignore maximumLineLength
-    complete: '=',
-    incomplete: '.',
-    width: 20,
-    total: total / 1000,
-  });
+  return new ProgressBar(
+    `downloading ${name} [:bar] :rate/Kbps :percent :etas remaining`,
+    {
+      complete: '=',
+      incomplete: '.',
+      width: 20,
+      total: total / 1000,
+    },
+  );
 }
 
-async function downloadAnalyzer(url: string, localPath: string, expectedChecksum: string): Promise<string> {
+async function downloadAnalyzer(
+  url: string,
+  localPath: string,
+  expectedChecksum: string,
+): Promise<string> {
   return new Promise((resolve, reject) => {
     const fsStream = fs.createWriteStream(localPath + '.part');
     try {
@@ -36,7 +43,8 @@ async function downloadAnalyzer(url: string, localPath: string, expectedChecksum
         .on('response', async (res) => {
           if (res.statusCode >= 400) {
             const err = new Error(
-              'Bad HTTP response for snyk-wala-analyzer download');
+              'Bad HTTP response for snyk-wala-analyzer download',
+            );
             // TODO: add custom error for status code => err.statusCode = res.statusCode;
             fsStream.destroy();
             hasError = true;
@@ -55,7 +63,7 @@ async function downloadAnalyzer(url: string, localPath: string, expectedChecksum
             progressBar.tick(chunk.length / 1000);
           }
         })
-        .on('error',(err) => {
+        .on('error', (err) => {
           return reject(err);
         })
         .pipe(fsStream)
@@ -67,20 +75,25 @@ async function downloadAnalyzer(url: string, localPath: string, expectedChecksum
           if (hasError) {
             await promisifedFs.unlink(localPath + '.part');
           } else {
-            if (!await matchChecksum) {
-              return reject(new Error("Wrong checksum of downloaded call-graph-generator."));
+            if (!(await matchChecksum)) {
+              return reject(
+                new Error('Wrong checksum of downloaded call-graph-generator.'),
+              );
             }
             await promisifedFs.rename(localPath + '.part', localPath);
             resolve(localPath);
           }
-        })
+        });
     } catch (err) {
       reject(err);
     }
-  })
+  });
 }
 
-async function verifyChecksum(localPathStream: ReadableStream, expectedChecksum: string): Promise<boolean> {
+async function verifyChecksum(
+  localPathStream: ReadableStream,
+  expectedChecksum: string,
+): Promise<boolean> {
   return new Promise((resolve, reject) => {
     const hash = crypto.createHash('sha256');
     localPathStream
@@ -92,13 +105,18 @@ async function verifyChecksum(localPathStream: ReadableStream, expectedChecksum:
   });
 }
 
-export async function fetch(url: string, expectedChecksum: string): Promise<string> {
+export async function fetch(
+  url: string,
+  expectedChecksum: string,
+): Promise<string> {
   const localPath = LOCAL_PATH;
   if (await promisifedFs.exists(localPath)) {
-    if (await verifyChecksum(fs.createReadStream(localPath), expectedChecksum)) {
+    if (
+      await verifyChecksum(fs.createReadStream(localPath), expectedChecksum)
+    ) {
       return localPath;
     }
-    console.log(`New version of ${JAR_NAME} available`)
+    console.log(`New version of ${JAR_NAME} available`);
   }
   await fsExtra.ensureDir(path.dirname(localPath));
 

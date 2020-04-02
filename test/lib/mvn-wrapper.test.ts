@@ -22,11 +22,6 @@ test('get right args for mvn command', async () => {
     '-f',
     'directory_name',
   ]);
-  expect(getMvnCommandArgs()).toEqual([
-    'dependency:build-classpath',
-    '-f',
-    '.',
-  ]);
 });
 
 test('parse mvn results', async () => {
