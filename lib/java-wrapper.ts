@@ -1,24 +1,30 @@
 import 'source-map-support/register';
 
 import * as jszip from 'jszip';
+import { Graph } from 'graphlib';
+import * as path from 'path';
 import * as config from './config';
 
 import { execute } from './sub-process';
 import { fetch } from './fetch-snyk-wala-analyzer';
 import { buildCallGraph } from './call-graph';
-import { readFile } from './promisified-fs';
+import { glob, readFile } from './promisified-fs-glob';
 import { toFQclassName } from './class-parsing';
-import { Graph } from 'graphlib';
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function getJavaCommandArgs(
+function getJavaCommandArgs(
   classPath: string,
   jarPath: string,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  targetPath = '.',
+  entrypoints: string[],
 ): string[] {
-  // TODO return parameters according to the Wala jar
-  throw new Error('Not implemented');
+  return [
+    '-cp',
+    jarPath,
+    'io.snyk.callgraph.app.App',
+    '--application-classpath',
+    classPath,
+    '--classes-to-get-entrypoints',
+    entrypoints.join(','),
+  ];
 }
 
 async function runJavaCommand(
@@ -28,18 +34,36 @@ async function runJavaCommand(
   return execute('java', javaCommandArgs, { cwd: targetPath });
 }
 
+export async function getEntrypoints(targetPath: string): Promise<string[]> {
+  const entrypointsFiles = await glob(
+    path.join(targetPath, '**/target/classes/**/*.class'),
+  );
+
+  return entrypointsFiles.map((entrypoint) =>
+    entrypoint
+      .split('target/classes/')[1]
+      .replace('.class', '')
+      // Some build paths also include "java/main/" or "main/, which is not part of the class name
+      .replace(/(^java\/main\/)|(^main\/)/, ''),
+  );
+}
+
 export async function getClassPerJarMapping(
   classPath: string,
 ): Promise<{ [index: string]: string }> {
   const classPerJarMapping: { [index: string]: string } = {};
-  for (const jar of classPath.split(':')) {
-    const jarFileContent = await readFile(jar);
+  for (const classPathItem of classPath.split(':')) {
+    // classpath can also contain local directories with classes - we don't need them for package mapping
+    if (!classPathItem.endsWith('.jar')) {
+      continue;
+    }
+    const jarFileContent = await readFile(classPathItem);
     const jarContent = await jszip.loadAsync(jarFileContent);
     for (const classFile of Object.keys(jarContent.files).filter((name) =>
       name.endsWith('.class'),
     )) {
       const className = toFQclassName(classFile.replace('.class', '')); // removing .class from name
-      classPerJarMapping[className] = jar;
+      classPerJarMapping[className] = classPathItem;
     }
   }
   return classPerJarMapping;
@@ -53,7 +77,11 @@ export async function getCallGraph(
     config.CALL_GRAPH_GENERATOR_URL,
     config.CALL_GRAPH_GENERATOR_CHECKSUM,
   );
-  const javaCommandArgs = getJavaCommandArgs(classPath, jarPath, targetPath);
+  const entrypoints = await getEntrypoints(targetPath);
+  if (!entrypoints.length) {
+    throw new Error('No entrypoints found.');
+  }
+  const javaCommandArgs = getJavaCommandArgs(classPath, jarPath, entrypoints);
   try {
     const [javaOutput, classPerJarMapping] = await Promise.all([
       runJavaCommand(javaCommandArgs, targetPath),

@@ -8,7 +8,7 @@ import * as tempDir from 'temp-dir';
 import * as crypto from 'crypto';
 import ReadableStream = NodeJS.ReadableStream;
 
-import * as promisifedFs from './promisified-fs';
+import * as promisifedFs from './promisified-fs-glob';
 
 export const JAR_NAME = 'java-call-graph-generator.jar';
 
