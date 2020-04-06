@@ -5,7 +5,7 @@ import * as path from 'path';
 import * as tempDir from 'temp-dir';
 import * as needle from 'needle';
 
-import * as promisifiedFs from '../../lib/promisified-fs';
+import * as promisifiedFs from '../../lib/promisified-fs-glob';
 
 nock.disableNetConnect();
 const tmpPath = path.join(
