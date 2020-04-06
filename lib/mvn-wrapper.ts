@@ -6,7 +6,6 @@ export function getMvnCommandArgs(
   useDependencyPlugin: boolean,
 ): string[] {
   // there are two ways of getting classpath - either from maven plugin or by exec command
-  // they can produce different outputs and even fail the analysis; no details are known yet, so both are kept in use
   if (useDependencyPlugin) {
     return ['dependency:build-classpath', '-f', targetPath];
   }
@@ -57,17 +56,20 @@ export function mergeMvnClassPaths(classPaths: string[]): string {
   return Array.from(new Set(classPaths.join(':').split(':'))).join(':');
 }
 
-export async function getClassPathFromMvn(
-  targetPath: string,
-  useDependencyPlugin: boolean,
-): Promise<string> {
-  const mvnCommandArgs = getMvnCommandArgs(targetPath, useDependencyPlugin);
+export async function getClassPathFromMvn(targetPath: string): Promise<string> {
+  let mvnCommandArgs: string[] = [];
+  let mvnOutput: string;
+  let classPaths: string[] = [];
   try {
-    const mvnOutput = await runMvnCommand(mvnCommandArgs, targetPath);
-    let classPaths;
-    if (useDependencyPlugin) {
+    try {
+      // try `mvn exec` for classpath
+      mvnCommandArgs = getMvnCommandArgs(targetPath, false);
+      mvnOutput = await runMvnCommand(mvnCommandArgs, targetPath);
       classPaths = parseMvnDependencyPluginCommandOutput(mvnOutput);
-    } else {
+    } catch (e) {
+      // if it fails, fallback to mvn dependency:build-classpath
+      mvnCommandArgs = getMvnCommandArgs(targetPath, true);
+      mvnOutput = await runMvnCommand(mvnCommandArgs, targetPath);
       classPaths = parseMvnExecCommandOutput(mvnOutput);
     }
     return mergeMvnClassPaths(classPaths);
