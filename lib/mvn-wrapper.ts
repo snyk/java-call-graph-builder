@@ -1,14 +1,7 @@
 import 'source-map-support/register';
 import { execute } from './sub-process';
 
-export function getMvnCommandArgs(
-  targetPath: string,
-  useDependencyPlugin: boolean,
-): string[] {
-  // there are two ways of getting classpath - either from maven plugin or by exec command
-  if (useDependencyPlugin) {
-    return ['dependency:build-classpath', '-f', targetPath];
-  }
+function getMvnCommandArgsForMvnExec(targetPath: string): string[] {
   return [
     '-q',
     'exec:exec',
@@ -18,6 +11,10 @@ export function getMvnCommandArgs(
     '-f',
     targetPath,
   ];
+}
+
+function getMvnCommandArgsForDependencyPlugin(targetPath: string): string[] {
+  return ['dependency:build-classpath', '-f', targetPath];
 }
 
 async function runMvnCommand(
@@ -62,13 +59,15 @@ export async function getClassPathFromMvn(targetPath: string): Promise<string> {
   let classPaths: string[] = [];
   try {
     try {
+      // there are two ways of getting classpath - either from maven plugin or by exec command
       // try `mvn exec` for classpath
-      mvnCommandArgs = getMvnCommandArgs(targetPath, false);
+      mvnCommandArgs = getMvnCommandArgsForMvnExec(targetPath);
       mvnOutput = await runMvnCommand(mvnCommandArgs, targetPath);
       classPaths = parseMvnDependencyPluginCommandOutput(mvnOutput);
     } catch (e) {
-      // if it fails, fallback to mvn dependency:build-classpath
-      mvnCommandArgs = getMvnCommandArgs(targetPath, true);
+      // if it fails, try mvn dependency:build-classpath
+      // TODO send error message for further analysis
+      mvnCommandArgs = getMvnCommandArgsForDependencyPlugin(targetPath);
       mvnOutput = await runMvnCommand(mvnCommandArgs, targetPath);
       classPaths = parseMvnExecCommandOutput(mvnOutput);
     }
