@@ -1,15 +1,7 @@
 import 'source-map-support/register';
 import { execute } from './sub-process';
 
-export function getMvnCommandArgs(
-  targetPath: string,
-  useDependencyPlugin: boolean,
-): string[] {
-  // there are two ways of getting classpath - either from maven plugin or by exec command
-  // they can produce different outputs and even fail the analysis; no details are known yet, so both are kept in use
-  if (useDependencyPlugin) {
-    return ['dependency:build-classpath', '-f', targetPath];
-  }
+function getMvnCommandArgsForMvnExec(targetPath: string): string[] {
   return [
     '-q',
     'exec:exec',
@@ -19,6 +11,10 @@ export function getMvnCommandArgs(
     '-f',
     targetPath,
   ];
+}
+
+function getMvnCommandArgsForDependencyPlugin(targetPath: string): string[] {
+  return ['dependency:build-classpath', '-f', targetPath];
 }
 
 async function runMvnCommand(
@@ -57,17 +53,22 @@ export function mergeMvnClassPaths(classPaths: string[]): string {
   return Array.from(new Set(classPaths.join(':').split(':'))).join(':');
 }
 
-export async function getClassPathFromMvn(
-  targetPath: string,
-  useDependencyPlugin: boolean,
-): Promise<string> {
-  const mvnCommandArgs = getMvnCommandArgs(targetPath, useDependencyPlugin);
+export async function getClassPathFromMvn(targetPath: string): Promise<string> {
+  let mvnCommandArgs: string[] = [];
+  let mvnOutput: string;
+  let classPaths: string[] = [];
   try {
-    const mvnOutput = await runMvnCommand(mvnCommandArgs, targetPath);
-    let classPaths;
-    if (useDependencyPlugin) {
+    try {
+      // there are two ways of getting classpath - either from maven plugin or by exec command
+      // try `mvn exec` for classpath
+      mvnCommandArgs = getMvnCommandArgsForMvnExec(targetPath);
+      mvnOutput = await runMvnCommand(mvnCommandArgs, targetPath);
       classPaths = parseMvnDependencyPluginCommandOutput(mvnOutput);
-    } else {
+    } catch (e) {
+      // if it fails, try mvn dependency:build-classpath
+      // TODO send error message for further analysis
+      mvnCommandArgs = getMvnCommandArgsForDependencyPlugin(targetPath);
+      mvnOutput = await runMvnCommand(mvnCommandArgs, targetPath);
       classPaths = parseMvnExecCommandOutput(mvnOutput);
     }
     return mergeMvnClassPaths(classPaths);

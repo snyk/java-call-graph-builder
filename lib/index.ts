@@ -4,11 +4,8 @@ import { getCallGraphGradle } from './gradle-wrapper';
 import { getCallGraph } from './java-wrapper';
 import { Graph } from 'graphlib';
 
-export async function getCallGraphMvn(
-  targetPath: string,
-  useDependencyPlugin: boolean,
-): Promise<Graph> {
-  const classPath = await getClassPathFromMvn(targetPath, useDependencyPlugin);
+export async function getCallGraphMvn(targetPath: string): Promise<Graph> {
+  const classPath = await getClassPathFromMvn(targetPath);
 
   return await getCallGraph(classPath, targetPath);
 }
