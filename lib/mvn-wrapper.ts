@@ -63,13 +63,13 @@ export async function getClassPathFromMvn(targetPath: string): Promise<string> {
       // try `mvn exec` for classpath
       mvnCommandArgs = getMvnCommandArgsForMvnExec(targetPath);
       mvnOutput = await runMvnCommand(mvnCommandArgs, targetPath);
-      classPaths = parseMvnDependencyPluginCommandOutput(mvnOutput);
+      classPaths = parseMvnExecCommandOutput(mvnOutput);
     } catch (e) {
       // if it fails, try mvn dependency:build-classpath
       // TODO send error message for further analysis
       mvnCommandArgs = getMvnCommandArgsForDependencyPlugin(targetPath);
       mvnOutput = await runMvnCommand(mvnCommandArgs, targetPath);
-      classPaths = parseMvnExecCommandOutput(mvnOutput);
+      classPaths = parseMvnDependencyPluginCommandOutput(mvnOutput);
     }
     return mergeMvnClassPaths(classPaths);
   } catch (e) {
