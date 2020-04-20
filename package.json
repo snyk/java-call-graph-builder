@@ -27,7 +27,8 @@
   },
   "files": [
     "bin",
-    "dist"
+    "dist",
+    "config.default.json"
   ],
   "homepage": "https://github.com/snyk/java-call-graph-builder#readme",
   "dependencies": {
