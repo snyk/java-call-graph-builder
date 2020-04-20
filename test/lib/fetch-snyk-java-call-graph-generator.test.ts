@@ -1,4 +1,4 @@
-import * as fetchSnykWalaAnalyzer from '../../lib/fetch-snyk-wala-analyzer';
+import * as fetchSnykJavaCallGraphGenerator from '../../lib/fetch-snyk-java-call-graph-generator';
 import * as nock from 'nock';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -11,7 +11,7 @@ nock.disableNetConnect();
 const tmpPath = path.join(
   tempDir,
   'call-graph-generator',
-  fetchSnykWalaAnalyzer.JAR_NAME,
+  fetchSnykJavaCallGraphGenerator.JAR_NAME,
 );
 
 beforeEach(async () => {
@@ -32,13 +32,13 @@ test('analyzer is fetched when does not exist', async () => {
     .get(/\/resources\/.*/)
     .reply(200, () => {
       return fs.createReadStream(
-        path.join(__dirname, '../fixtures/wala-analyzer.txt'),
+        path.join(__dirname, '../fixtures/snyk-call-graph-generator.txt'),
       );
     });
 
-  expect(await fetchSnykWalaAnalyzer.fetch(URL, EXPECTED_CHECKSUM)).toEqual(
-    tmpPath,
-  );
+  expect(
+    await fetchSnykJavaCallGraphGenerator.fetch(URL, EXPECTED_CHECKSUM),
+  ).toEqual(tmpPath);
 });
 
 test('analyzer is not fetched when actual version is available', async () => {
@@ -47,13 +47,13 @@ test('analyzer is not fetched when actual version is available', async () => {
     .spyOn(fs, 'createReadStream')
     .mockReturnValue(
       fs.createReadStream(
-        path.join(__dirname, '../fixtures/wala-analyzer.txt'),
+        path.join(__dirname, '../fixtures/snyk-call-graph-generator.txt'),
       ),
     );
   jest.spyOn(needle, 'get');
-  expect(await fetchSnykWalaAnalyzer.fetch(URL, EXPECTED_CHECKSUM)).toEqual(
-    tmpPath,
-  );
+  expect(
+    await fetchSnykJavaCallGraphGenerator.fetch(URL, EXPECTED_CHECKSUM),
+  ).toEqual(tmpPath);
   expect(needle.get).not.toHaveBeenCalled();
 });
 
@@ -63,17 +63,17 @@ test('analyzer is fetched when older version is available', async () => {
     .spyOn(fs, 'createReadStream')
     .mockReturnValueOnce(
       fs.createReadStream(
-        path.join(__dirname, '../fixtures/wala-analyzer_old.txt'),
+        path.join(__dirname, '../fixtures/snyk-call-graph-generator_old.txt'),
       ),
     );
   nock('https://snyk.test')
     .get(/\/resources\/.*/)
     .reply(200, () => {
       return fs.createReadStream(
-        path.join(__dirname, '../fixtures/wala-analyzer.txt'),
+        path.join(__dirname, '../fixtures/snyk-call-graph-generator.txt'),
       );
     });
-  const a = await fetchSnykWalaAnalyzer.fetch(URL, EXPECTED_CHECKSUM);
+  const a = await fetchSnykJavaCallGraphGenerator.fetch(URL, EXPECTED_CHECKSUM);
   expect(a).toEqual(tmpPath);
 });
 
@@ -82,8 +82,10 @@ test('analyzer fetch error is caught', async () => {
     .get(/\/resources\/.*/)
     .reply(404);
   await expect(
-    fetchSnykWalaAnalyzer.fetch(URL, EXPECTED_CHECKSUM),
-  ).rejects.toThrowError('Bad HTTP response for snyk-wala-analyzer download');
+    fetchSnykJavaCallGraphGenerator.fetch(URL, EXPECTED_CHECKSUM),
+  ).rejects.toThrowError(
+    'Bad HTTP response for snyk-call-graph-generator download',
+  );
 });
 
 test('analyzer wrong checksum after download is caught', async () => {
@@ -91,10 +93,10 @@ test('analyzer wrong checksum after download is caught', async () => {
     .get(/\/resources\/.*/)
     .reply(200, () => {
       return fs.createReadStream(
-        path.join(__dirname, '../fixtures/wala-analyzer_old.txt'),
+        path.join(__dirname, '../fixtures/snyk-call-graph-generator_old.txt'),
       );
     });
   await expect(
-    fetchSnykWalaAnalyzer.fetch(URL, EXPECTED_CHECKSUM),
+    fetchSnykJavaCallGraphGenerator.fetch(URL, EXPECTED_CHECKSUM),
   ).rejects.toThrowError('Wrong checksum of downloaded call-graph-generator.');
 });

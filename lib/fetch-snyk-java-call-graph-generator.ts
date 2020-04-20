@@ -6,9 +6,14 @@ import * as ciInfo from 'ci-info';
 import * as ProgressBar from 'progress';
 import * as tempDir from 'temp-dir';
 import * as crypto from 'crypto';
+import * as debugModule from 'debug';
 import ReadableStream = NodeJS.ReadableStream;
 
 import * as promisifedFs from './promisified-fs-glob';
+
+const debug = debugModule(
+  'java-call-graph-builder:fetch-snyk-java-call-graph-generator',
+);
 
 export const JAR_NAME = 'java-call-graph-generator.jar';
 
@@ -35,6 +40,7 @@ async function downloadAnalyzer(
     const fsStream = fs.createWriteStream(localPath + '.part');
     try {
       let progressBar: ProgressBar;
+      debug(`fetching java graph generator from ${url}`);
       const req = needle.get(url);
       let matchChecksum: Promise<boolean>;
       let hasError = false;
@@ -43,7 +49,7 @@ async function downloadAnalyzer(
         .on('response', async (res) => {
           if (res.statusCode >= 400) {
             const err = new Error(
-              'Bad HTTP response for snyk-wala-analyzer download',
+              'Bad HTTP response for snyk-call-graph-generator download',
             );
             // TODO: add custom error for status code => err.statusCode = res.statusCode;
             fsStream.destroy();

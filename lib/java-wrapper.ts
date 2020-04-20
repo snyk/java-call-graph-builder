@@ -6,7 +6,7 @@ import * as path from 'path';
 import * as config from './config';
 
 import { execute } from './sub-process';
-import { fetch } from './fetch-snyk-wala-analyzer';
+import { fetch } from './fetch-snyk-java-call-graph-generator';
 import { buildCallGraph } from './call-graph';
 import { glob, readFile } from './promisified-fs-glob';
 import { toFQclassName } from './class-parsing';
