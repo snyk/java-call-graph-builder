@@ -103,8 +103,10 @@ async function verifyChecksum(
     const hash = crypto.createHash('sha256');
     localPathStream
       .on('error', reject)
-      .pipe(hash)
-      .on('finish', () => {
+      .on('data', (chunk) => {
+        hash.update(chunk);
+      })
+      .on('end', () => {
         resolve(hash.digest('hex') === expectedChecksum);
       });
   });
@@ -115,6 +117,7 @@ export async function fetch(
   expectedChecksum: string,
 ): Promise<string> {
   const localPath = LOCAL_PATH;
+
   if (await promisifedFs.exists(localPath)) {
     if (
       await verifyChecksum(fs.createReadStream(localPath), expectedChecksum)

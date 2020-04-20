@@ -10,9 +10,9 @@ Snyk helps you find, fix and monitor for known vulnerabilities in your dependenc
 ![Snyk logo](https://snyk.io/style/asset/logo/snyk-print.svg)
 
 
-## Snyk Java Call Graph Builder 
+## Snyk Java Call Graph Builder
 
-This package helps build a function call graph for a maven compiled artifact. 
+This package helps build a function call graph for a maven compiled artifact.
 It is an internal component intended for use by our [CLI maven plugin](https://github.com/snyk/snyk-mvn-plugin).
 
 # Support
@@ -44,6 +44,5 @@ It is an internal component intended for use by our [CLI maven plugin](https://g
 | 9              | ✅ |
 | 10             | ✅ |
 | 11 (LTS)       | ✅ |
-| 12             | ✅ | 
+| 12             | ✅ |
 | 13             | ✅ |
-
