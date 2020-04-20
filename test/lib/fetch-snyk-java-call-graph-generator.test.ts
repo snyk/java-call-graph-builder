@@ -29,12 +29,12 @@ const EXPECTED_CHECKSUM =
 
 test('analyzer is fetched when does not exist', async () => {
   nock('https://snyk.test')
-    .get(/\/resources\/.*/)
-    .reply(200, () => {
-      return fs.createReadStream(
-        path.join(__dirname, '../fixtures/snyk-call-graph-generator.txt'),
-      );
-    });
+    .get('/resources/testing-address.jar')
+    .replyWithFile(
+      200,
+      __dirname + '/../fixtures/snyk-call-graph-generator.txt',
+      { 'Content-Length': '446' },
+    );
 
   expect(
     await fetchSnykJavaCallGraphGenerator.fetch(URL, EXPECTED_CHECKSUM),
@@ -59,27 +59,28 @@ test('analyzer is not fetched when actual version is available', async () => {
 
 test('analyzer is fetched when older version is available', async () => {
   jest.spyOn(promisifiedFs, 'exists').mockResolvedValue(true);
-  jest
-    .spyOn(fs, 'createReadStream')
-    .mockReturnValueOnce(
-      fs.createReadStream(
-        path.join(__dirname, '../fixtures/snyk-call-graph-generator_old.txt'),
-      ),
-    );
+
   nock('https://snyk.test')
-    .get(/\/resources\/.*/)
-    .reply(200, () => {
-      return fs.createReadStream(
-        path.join(__dirname, '../fixtures/snyk-call-graph-generator.txt'),
-      );
-    });
+    .get('/resources/testing-address.jar')
+    .replyWithFile(
+      200,
+      __dirname + '/../fixtures/snyk-call-graph-generator.txt',
+      { 'Content-Length': '446' },
+    );
+
+  jest.spyOn(fs, 'createReadStream').mockImplementationOnce(() => {
+    return fs.createReadStream(
+      path.join(__dirname, '../fixtures/snyk-call-graph-generator_old.txt'),
+    );
+  });
+
   const a = await fetchSnykJavaCallGraphGenerator.fetch(URL, EXPECTED_CHECKSUM);
   expect(a).toEqual(tmpPath);
 });
 
 test('analyzer fetch error is caught', async () => {
   nock('https://snyk.test')
-    .get(/\/resources\/.*/)
+    .get('/resources/testing-address.jar')
     .reply(404);
   await expect(
     fetchSnykJavaCallGraphGenerator.fetch(URL, EXPECTED_CHECKSUM),
@@ -90,12 +91,13 @@ test('analyzer fetch error is caught', async () => {
 
 test('analyzer wrong checksum after download is caught', async () => {
   nock('https://snyk.test')
-    .get(/\/resources\/.*/)
-    .reply(200, () => {
-      return fs.createReadStream(
-        path.join(__dirname, '../fixtures/snyk-call-graph-generator_old.txt'),
-      );
-    });
+    .get('/resources/testing-address.jar')
+    .replyWithFile(
+      200,
+      __dirname + '/../fixtures/snyk-call-graph-generator_old.txt',
+      { 'Content-Length': '446' },
+    );
+
   await expect(
     fetchSnykJavaCallGraphGenerator.fetch(URL, EXPECTED_CHECKSUM),
   ).rejects.toThrowError('Wrong checksum of downloaded call-graph-generator.');
