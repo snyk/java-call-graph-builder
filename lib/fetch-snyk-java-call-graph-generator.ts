@@ -1,5 +1,4 @@
 import * as fs from 'fs';
-import * as fsExtra from 'fs-extra';
 import * as path from 'path';
 import * as needle from 'needle';
 import * as ciInfo from 'ci-info';
@@ -124,7 +123,10 @@ export async function fetch(
     }
     console.log(`New version of ${JAR_NAME} available`);
   }
-  await fsExtra.ensureDir(path.dirname(localPath));
+
+  if (!(await promisifedFs.exists(path.dirname(localPath)))) {
+    await promisifedFs.mkdir(path.dirname(localPath));
+  }
 
   return await downloadAnalyzer(url, localPath, expectedChecksum);
 }
