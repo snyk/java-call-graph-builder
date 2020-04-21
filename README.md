@@ -2,7 +2,7 @@
 
 ***
 
-[![Known Vulnerabilities](https://snyk.io/test/github/snyk/snyk-mvn-plugin/badge.svg?targetFile=package.json)](https://snyk.io/test/github/snyk/snyk-mvn-plugin?targetFile=package.json)
+[![Known Vulnerabilities](https://snyk.io/test/github/snyk/java-call-graph-builder/badge.svg?targetFile=package.json)](https://snyk.io/test/github/snyk/java-call-graph-builder?targetFile=package.json)
 
 
 Snyk helps you find, fix and monitor for known vulnerabilities in your dependencies, both on an ad hoc basis and as part of your CI (Build) system.
