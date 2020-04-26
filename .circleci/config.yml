@@ -29,6 +29,11 @@ commands:
           root: .
           paths:
             - node_modules/
+  install_maven:
+    description: Install maven
+    steps:
+      - run: apt-get update
+      - run: apt-get install -y maven
   checkout_and_merge:
     steps:
       - checkout
@@ -49,6 +54,7 @@ jobs:
     <<: *defaults
     steps:
       - install_deps
+      - install_maven
   lint:
     <<: *defaults
     steps:

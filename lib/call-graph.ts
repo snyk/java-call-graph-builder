@@ -1,10 +1,11 @@
 import { Graph } from 'graphlib';
 import { removeParams, toFQclassName } from './class-parsing';
+import { CallGraphNode } from './types';
 
 function getNodeLabel(
   functionCall: string,
   classPerJarMapping: { [index: string]: string },
-): {} {
+): CallGraphNode {
   // com.ibm.wala.FakeRootClass:fakeRootMethod
   const [className, functionName] = functionCall.split(':');
   const jarName = classPerJarMapping[className];
