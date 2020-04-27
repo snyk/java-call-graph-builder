@@ -10,32 +10,39 @@ interface Metrics {
   getCallGraph?: number;
 }
 
-const metricsState: { [x in keyof Metrics]: [number, number] | undefined } = {};
+const metricsState: {
+  [metric in keyof Metrics]: { seconds: number; nanoseconds: number };
+} = {};
 
-function start(label: keyof Metrics) {
-  metricsState[label] = process.hrtime();
+function start(metric: keyof Metrics) {
+  const [secs, nsecs] = process.hrtime();
+  metricsState[metric] = { seconds: secs, nanoseconds: nsecs };
 }
 
-function stop(label: keyof Metrics) {
-  const previous = metricsState[label];
-  metricsState[label] = process.hrtime(previous);
+function stop(metric: keyof Metrics) {
+  const { seconds, nanoseconds } = metricsState[metric] || {
+    seconds: 0,
+    nanoseconds: 0,
+  };
+  const [secs, nsecs] = process.hrtime([seconds, nanoseconds]);
+  metricsState[metric] = { seconds: secs, nanoseconds: nsecs };
 }
 
 function getMetrics(): Metrics {
   return _(metricsState)
     .mapValues<number>(
-      (hrtime) => _.get(hrtime, '[0]', 0) + _.get(hrtime, '[1]', 0) / 1e9,
+      ({ seconds, nanoseconds }: any) => seconds + nanoseconds / 1e9,
     )
     .value();
 }
 
 async function timeIt<T>(
-  label: keyof Metrics,
+  metric: keyof Metrics,
   fn: () => Promise<T>,
 ): Promise<T> {
-  start(label);
+  start(metric);
   const x = await fn();
-  stop(label);
+  stop(metric);
   return x;
 }
 
