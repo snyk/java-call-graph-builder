@@ -1,5 +1,9 @@
 import * as path from 'path';
-import { getClassPerJarMapping, getEntrypoints } from '../../lib/java-wrapper';
+import {
+  getClassPerJarMapping,
+  getEntrypoints,
+  getCallGraph,
+} from '../../lib/java-wrapper';
 
 test('classes per jar mapping is created', async () => {
   const mapping = await getClassPerJarMapping(
@@ -13,6 +17,12 @@ test('classes per jar mapping is created', async () => {
     expect(item.startsWith('/')).toBeTruthy();
     expect(item.endsWith('/todolist-core-1.0-SNAPSHOT.jar')).toBeTruthy();
   }
+});
+
+test('not target folder throw error', async () => {
+  expect(
+    getEntrypoints('some-bogus-folder-that-does-not-exist'),
+  ).rejects.toThrowError('Could not find target folder');
 });
 
 test('entrypoints are found correctly', async () => {
@@ -34,4 +44,14 @@ test('entrypoints are found correctly', async () => {
       path.join(__dirname, '../fixtures/example-java-project'),
     ),
   ).toStrictEqual(expectedEntrypoints);
+});
+
+test('getCallGraph throws if cannot find entry points', async () => {
+  const noEntrypointsTargetFolder = path.join(
+    __dirname,
+    '../fixtures/java-project-no-entrypoints',
+  );
+  expect(
+    getCallGraph('some-class-paths', noEntrypointsTargetFolder),
+  ).rejects.toThrowError('No entrypoints found');
 });
