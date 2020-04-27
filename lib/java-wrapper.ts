@@ -90,12 +90,12 @@ export async function getCallGraph(
     entrypoints,
   );
   try {
-    const [javaOutput, classPerJarMapping] = await Promise.all([
-      timeIt('generateCallGraph', () =>
-        runJavaCommand(callgraphGenCommandArgs, targetPath),
-      ),
-      timeIt('mapClassesPerJar', () => getClassPerJarMapping(classPath)),
-    ]);
+    const javaOutput = await timeIt('generateCallGraph', () =>
+      runJavaCommand(callgraphGenCommandArgs, targetPath),
+    );
+    const classPerJarMapping = await timeIt('mapClassesPerJar', () =>
+      getClassPerJarMapping(classPath),
+    );
 
     return buildCallGraph(javaOutput, classPerJarMapping);
   } catch (e) {
