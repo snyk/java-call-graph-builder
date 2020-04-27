@@ -6,15 +6,20 @@ interface Metrics {
   fetchCallGraphBuilder?: number;
   getMvnClassPath?: number;
   getGradleClassPath?: number;
-  getEntrypoints?: number;
-  generateCallGraph?: number;
-  mapClassesPerJar?: number;
-  getCallGraph?: number;
+  getEntrypoints: number;
+  generateCallGraph: number;
+  mapClassesPerJar: number;
+  getCallGraph: number;
 }
 
 const metricsState: {
   [metric in keyof Metrics]: { seconds: number; nanoseconds: number };
-} = {};
+} = {
+  getEntrypoints: { seconds: 0, nanoseconds: 0 },
+  generateCallGraph: { seconds: 0, nanoseconds: 0 },
+  mapClassesPerJar: { seconds: 0, nanoseconds: 0 },
+  getCallGraph: { seconds: 0, nanoseconds: 0 },
+};
 
 function start(metric: keyof Metrics) {
   const [secs, nsecs] = process.hrtime();
