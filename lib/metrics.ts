@@ -24,7 +24,7 @@ function stop(label: keyof Metrics) {
 function getMetrics(): Metrics {
   return _(metricsState)
     .mapValues<number>(
-      (hrtime) => _.get(hrtime, '[0]', 0) + _.get(hrtime, '[1]', 0) / 1e9,
+      (hrtime) => _.get(hrtime, '[0]', 0) + (_.get(hrtime, '[1]', 0) / 1e9),
     )
     .value();
 }
