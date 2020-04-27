@@ -1,5 +1,7 @@
 import * as _ from 'lodash';
 
+export { Metrics, timeIt, getMetrics };
+
 interface Metrics {
   fetchCallGraphBuilder?: number;
   getMvnClassPath?: number;
@@ -45,5 +47,3 @@ async function timeIt<T>(
   stop(metric);
   return x;
 }
-
-export { Metrics, timeIt, getMetrics };
