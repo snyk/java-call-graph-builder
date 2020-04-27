@@ -10,8 +10,9 @@ import { fetch } from './fetch-snyk-java-call-graph-generator';
 import { buildCallGraph } from './call-graph';
 import { glob, readFile, exists } from './promisified-fs-glob';
 import { toFQclassName } from './class-parsing';
+import { timeIt } from './metrics';
 
-function getJavaCommandArgs(
+function getCallGraphGenCommandArgs(
   classPath: string,
   jarPath: string,
   entrypoints: string[],
@@ -80,21 +81,31 @@ export async function getCallGraph(
     config.CALL_GRAPH_GENERATOR_URL,
     config.CALL_GRAPH_GENERATOR_CHECKSUM,
   );
-  const entrypoints = await getEntrypoints(targetPath);
+  const entrypoints = await timeIt('getEntrypoints', () =>
+    getEntrypoints(targetPath),
+  );
   if (!entrypoints.length) {
     throw new Error('No entrypoints found');
   }
-  const javaCommandArgs = getJavaCommandArgs(classPath, jarPath, entrypoints);
+  const callgraphGenCommandArgs = getCallGraphGenCommandArgs(
+    classPath,
+    jarPath,
+    entrypoints,
+  );
   try {
-    const [javaOutput, classPerJarMapping] = await Promise.all([
-      runJavaCommand(javaCommandArgs, targetPath),
+    const javaOutput = await timeIt('generateCallGraph', () =>
+      runJavaCommand(callgraphGenCommandArgs, targetPath),
+    );
+    const classPerJarMapping = await timeIt('mapClassesPerJar', () =>
       getClassPerJarMapping(classPath),
-    ]);
+    );
 
     return buildCallGraph(javaOutput, classPerJarMapping);
   } catch (e) {
     throw new Error(
-      `java command 'java ${javaCommandArgs.join(' ')} failed with error: ${e}`,
+      `java command 'java ${callgraphGenCommandArgs.join(
+        ' ',
+      )} failed with error: ${e}`,
     );
   }
 }

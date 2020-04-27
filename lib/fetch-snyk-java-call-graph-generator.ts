@@ -6,6 +6,7 @@ import * as ProgressBar from 'progress';
 import * as tempDir from 'temp-dir';
 import * as crypto from 'crypto';
 import * as debugModule from 'debug';
+import * as metrics from './metrics';
 import ReadableStream = NodeJS.ReadableStream;
 
 import * as promisifedFs from './promisified-fs-glob';
@@ -131,5 +132,7 @@ export async function fetch(
     await promisifedFs.mkdir(path.dirname(localPath));
   }
 
-  return await downloadAnalyzer(url, localPath, expectedChecksum);
+  return await metrics.timeIt('fetchCallGraphBuilder', () =>
+    downloadAnalyzer(url, localPath, expectedChecksum),
+  );
 }
