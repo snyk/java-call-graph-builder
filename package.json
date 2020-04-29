@@ -52,7 +52,6 @@
     "@types/graphlib": "^2.1.5",
     "@types/jest": "^24.9.1",
     "@types/jszip": "^3.1.7",
-    "@types/lodash": "^4.14.116",
     "@types/needle": "^2.0.4",
     "@types/nock": "^11.1.0",
     "@types/node": "^8.10.59",
