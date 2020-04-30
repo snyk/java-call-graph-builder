@@ -1,4 +1,4 @@
-import { Graph } from 'graphlib';
+import { Graph } from '@snyk/graphlib';
 import { removeParams, toFQclassName } from './class-parsing';
 
 function getNodeLabel(
