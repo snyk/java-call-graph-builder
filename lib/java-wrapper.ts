@@ -8,7 +8,7 @@ import * as config from './config';
 import { execute } from './sub-process';
 import { fetch } from './fetch-snyk-java-call-graph-generator';
 import { buildCallGraph } from './call-graph';
-import { glob, readFile, exists } from './promisified-fs-glob';
+import { glob, readFile } from './promisified-fs-glob';
 import { toFQclassName } from './class-parsing';
 import { timeIt } from './metrics';
 
@@ -36,9 +36,11 @@ async function runJavaCommand(
 }
 
 export async function getEntrypoints(targetPath: string): Promise<string[]> {
-  if (!(await exists(path.join(targetPath, 'target')))) {
-    throw new Error('Could not find target folder');
+  const targetDirs = await glob(path.join(targetPath, '**/target'));
+  if (!targetDirs.length) {
+    throw new Error('Could not find a target folder');
   }
+
   const entrypointsFiles = await glob(
     path.join(targetPath, '**/target/classes/**/*.class'),
   );
@@ -84,9 +86,11 @@ export async function getCallGraph(
   const entrypoints = await timeIt('getEntrypoints', () =>
     getEntrypoints(targetPath),
   );
+
   if (!entrypoints.length) {
     throw new Error('No entrypoints found');
   }
+
   const callgraphGenCommandArgs = getCallGraphGenCommandArgs(
     classPath,
     jarPath,

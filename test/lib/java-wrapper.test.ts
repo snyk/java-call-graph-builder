@@ -22,7 +22,7 @@ test('classes per jar mapping is created', async () => {
 test('not target folder throw error', async () => {
   expect(
     getEntrypoints('some-bogus-folder-that-does-not-exist'),
-  ).rejects.toThrowError('Could not find target folder');
+  ).rejects.toThrowError('Could not find a target folder');
 });
 
 test('entrypoints are found correctly', async () => {
