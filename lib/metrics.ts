@@ -1,5 +1,3 @@
-import * as _ from '@snyk/lodash';
-
 export { Metrics, timeIt, getMetrics };
 
 interface Metrics {
@@ -36,11 +34,18 @@ function stop(metric: keyof Metrics) {
 }
 
 function getMetrics(): Metrics {
-  return _(metricsState)
-    .mapValues<number>(
-      ({ seconds, nanoseconds }: any) => seconds + nanoseconds / 1e9,
-    )
-    .value();
+  const metrics = {} as Metrics;
+
+  for (const [metric, value] of Object.entries(metricsState)) {
+    if (!value) {
+      continue;
+    }
+
+    const { seconds, nanoseconds } = value;
+    metrics[metric] = seconds + nanoseconds / 1e9;
+  }
+
+  return metrics;
 }
 
 async function timeIt<T>(
