@@ -1,4 +1,4 @@
 {
-  "CALL_GRAPH_GENERATOR_URL": "https://snyk.io/resources/cli/plugins/java/callgraph-generator/java-callgraph-generator-1.0-SNAPSHOT-jar-with-dependencies.jar",
-  "CALL_GRAPH_GENERATOR_CHECKSUM": "1b75303cd9c34c96a9d16beb86b0a4bdb1e2669c1788906f1e63914a9f11cdfe"
+  "CALL_GRAPH_GENERATOR_URL": "https://storage.googleapis.com/snyk-java-callgraph-generator/W3jTdXePWDEk7sZmaxNxgDAPCXnzFa6AWsvgeEN7yg/callgraph-generator-1.1.1-jar-with-dependencies.jar",
+  "CALL_GRAPH_GENERATOR_CHECKSUM": "abfcace534f9b374469d488d8a7ef01dd10480ea5c896f539952d4295660124d"
 }
