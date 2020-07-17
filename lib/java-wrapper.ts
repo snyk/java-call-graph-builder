@@ -31,8 +31,12 @@ function getCallGraphGenCommandArgs(
 async function runJavaCommand(
   javaCommandArgs: string[],
   targetPath: string,
+  timeout?: number,
 ): Promise<string> {
-  return execute('java', javaCommandArgs, { cwd: targetPath });
+  return execute('java', javaCommandArgs, {
+    cwd: targetPath,
+    timeout: timeout,
+  });
 }
 
 export async function getEntrypoints(targetPath: string): Promise<string[]> {
@@ -78,6 +82,7 @@ export async function getClassPerJarMapping(
 export async function getCallGraph(
   classPath: string,
   targetPath: string,
+  timeout?: number,
 ): Promise<Graph> {
   const jarPath = await fetch(
     config.CALL_GRAPH_GENERATOR_URL,
@@ -98,7 +103,7 @@ export async function getCallGraph(
   );
   try {
     const javaOutput = await timeIt('generateCallGraph', () =>
-      runJavaCommand(callgraphGenCommandArgs, targetPath),
+      runJavaCommand(callgraphGenCommandArgs, targetPath, timeout),
     );
     const classPerJarMapping = await timeIt('mapClassesPerJar', () =>
       getClassPerJarMapping(classPath),
