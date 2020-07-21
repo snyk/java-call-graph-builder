@@ -19,9 +19,10 @@ export function execute(
 
     const proc = childProcess.spawn(command, args, spawnOptions);
 
+    let timerId: NodeJS.Timer | null = null;
     if (options?.timeout) {
       const timeoutSeconds = options.timeout / 1000;
-      setTimeout(() => {
+      timerId = setTimeout(() => {
         proc.kill();
         reject(
           `Timeout; It took longer than ${timeoutSeconds}s to generate the call graph.`,
@@ -37,6 +38,9 @@ export function execute(
     });
 
     proc.on('close', (code: number) => {
+      if (timerId !== null) {
+        clearTimeout(timerId);
+      }
       if (code !== 0) {
         return reject(stdout || stderr);
       }
