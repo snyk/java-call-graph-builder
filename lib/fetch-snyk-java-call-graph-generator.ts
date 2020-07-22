@@ -5,15 +5,12 @@ import * as ciInfo from 'ci-info';
 import * as ProgressBar from 'progress';
 import * as tempDir from 'temp-dir';
 import * as crypto from 'crypto';
-import * as debugModule from 'debug';
+import { debug } from './debug';
+
 import * as metrics from './metrics';
 import ReadableStream = NodeJS.ReadableStream;
 
 import * as promisifedFs from './promisified-fs-glob';
-
-const debug = debugModule(
-  'java-call-graph-builder:fetch-snyk-java-call-graph-generator',
-);
 
 export const JAR_NAME = 'java-call-graph-generator.jar';
 
