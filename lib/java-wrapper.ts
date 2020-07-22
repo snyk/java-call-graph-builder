@@ -11,6 +11,7 @@ import { buildCallGraph } from './call-graph';
 import { glob, readFile } from './promisified-fs-glob';
 import { toFQclassName } from './class-parsing';
 import { timeIt } from './metrics';
+import { debug } from './debug';
 
 function getCallGraphGenCommandArgs(
   classPath: string,
@@ -33,9 +34,10 @@ async function runJavaCommand(
   targetPath: string,
   timeout?: number,
 ): Promise<string> {
+  debug(`executing java command: "java ${javaCommandArgs.join(' ')}"`);
   return execute('java', javaCommandArgs, {
     cwd: targetPath,
-    timeout: timeout,
+    timeout,
   });
 }
 
