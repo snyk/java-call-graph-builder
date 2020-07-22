@@ -1,4 +1,4 @@
 {
-  "CALL_GRAPH_GENERATOR_URL": "https://storage.googleapis.com/snyk-java-callgraph-generator/W3jTdXePWDEk7sZmaxNxgDAPCXnzFa6AWsvgeEN7yg/callgraph-generator-1.1.1-jar-with-dependencies.jar",
-  "CALL_GRAPH_GENERATOR_CHECKSUM": "abfcace534f9b374469d488d8a7ef01dd10480ea5c896f539952d4295660124d"
+  "CALL_GRAPH_GENERATOR_URL": "https://storage.googleapis.com/snyk-java-callgraph-generator/W3jTdXePWDEk7sZmaxNxgDAPCXnzFa6AWsvgeEN7yg/callgraph-generator-1.2.0-jar-with-dependencies.jar",
+  "CALL_GRAPH_GENERATOR_CHECKSUM": "4d1810aa968f8b44b0ce9d5fbe88796ff51eabdd9f15995279ed32d7fc7cce32"
 }

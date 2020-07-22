@@ -15,7 +15,7 @@ import { timeIt } from './metrics';
 function getCallGraphGenCommandArgs(
   classPath: string,
   jarPath: string,
-  entrypoints: string[],
+  targets: string[],
 ): string[] {
   return [
     '-cp',
@@ -23,8 +23,8 @@ function getCallGraphGenCommandArgs(
     'io.snyk.callgraph.app.App',
     '--application-classpath',
     classPath,
-    '--classes-to-get-entrypoints',
-    entrypoints.join(','),
+    '--dirs-to-get-entrypoints',
+    targets.join(','),
   ];
 }
 
@@ -39,23 +39,13 @@ async function runJavaCommand(
   });
 }
 
-export async function getEntrypoints(targetPath: string): Promise<string[]> {
+export async function getTargets(targetPath: string): Promise<string[]> {
   const targetDirs = await glob(path.join(targetPath, '**/target'));
   if (!targetDirs.length) {
     throw new Error('Could not find a target folder');
   }
 
-  const entrypointsFiles = await glob(
-    path.join(targetPath, '**/target/classes/**/*.class'),
-  );
-
-  return entrypointsFiles.map((entrypoint) =>
-    entrypoint
-      .split('target/classes/')[1]
-      .replace('.class', '')
-      // Some build paths also include "java/main/" or "main/, which is not part of the class name
-      .replace(/(^java\/main\/)|(^main\/)/, ''),
-  );
+  return targetDirs;
 }
 
 export async function getClassPerJarMapping(
@@ -88,18 +78,12 @@ export async function getCallGraph(
     config.CALL_GRAPH_GENERATOR_URL,
     config.CALL_GRAPH_GENERATOR_CHECKSUM,
   );
-  const entrypoints = await timeIt('getEntrypoints', () =>
-    getEntrypoints(targetPath),
-  );
-
-  if (!entrypoints.length) {
-    throw new Error('No entrypoints found');
-  }
+  const targets = await timeIt('getEntrypoints', () => getTargets(targetPath));
 
   const callgraphGenCommandArgs = getCallGraphGenCommandArgs(
     classPath,
     jarPath,
-    entrypoints,
+    targets,
   );
   try {
     const javaOutput = await timeIt('generateCallGraph', () =>
