@@ -13,7 +13,7 @@ import { toFQclassName } from './class-parsing';
 import { timeIt } from './metrics';
 import { debug } from './debug';
 
-function getCallGraphGenCommandArgs(
+export function getCallGraphGenCommandArgs(
   classPath: string,
   jarPath: string,
   targets: string[],
@@ -22,7 +22,7 @@ function getCallGraphGenCommandArgs(
     '-cp',
     jarPath,
     'io.snyk.callgraph.app.App',
-    '--application-classpath',
+    '--application-classpath-file',
     classPath,
     '--dirs-to-get-entrypoints',
     targets.join(','),
