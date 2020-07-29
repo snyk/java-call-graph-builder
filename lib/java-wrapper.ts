@@ -12,6 +12,8 @@ import { glob, readFile } from './promisified-fs-glob';
 import { toFQclassName } from './class-parsing';
 import { timeIt } from './metrics';
 import { debug } from './debug';
+import * as promisifedFs from './promisified-fs-glob';
+import * as tempDir from 'temp-dir';
 
 export function getCallGraphGenCommandArgs(
   classPath: string,
@@ -82,8 +84,14 @@ export async function getCallGraph(
   );
   const targets = await timeIt('getEntrypoints', () => getTargets(targetPath));
 
+  const tmpDir = await promisifedFs.mkdtemp(
+    path.join(tempDir, 'call-graph-generator'),
+  );
+  const clasPathFile = path.join(tmpDir, 'callgraph-classpath');
+  await promisifedFs.writeFile(clasPathFile, classPath);
+
   const callgraphGenCommandArgs = getCallGraphGenCommandArgs(
-    classPath,
+    clasPathFile,
     jarPath,
     targets,
   );
@@ -102,5 +110,12 @@ export async function getCallGraph(
         ' ',
       )} failed with error: ${e}`,
     );
+  } finally {
+    try {
+      promisifedFs.unlink(clasPathFile);
+      promisifedFs.rmdir(tmpDir);
+    } catch (e) {
+      // we couldn't delete temporary data in temporary folder, no big deal
+    }
   }
 }
