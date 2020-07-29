@@ -109,12 +109,8 @@ export async function getCallGraph(
       )} failed with error: ${e}`,
     );
   } finally {
-    try {
-      promisifedFs.unlink(classPathFile);
-      promisifedFs.rmdir(tmpDir);
-    } catch (e) {
-      // we couldn't delete temporary data in temporary folder, no big deal
-    }
+    // Fire and forget - we don't have to wait for a deletion of a temporary file
+    cleanupTempDir(classPathFile, tmpDir);
   }
 }
 
@@ -126,4 +122,13 @@ async function writeClassPathToTempDir(classPath) {
   await promisifedFs.writeFile(classPathFile, classPath);
 
   return { tmpDir, classPathFile };
+}
+
+async function cleanupTempDir(classPathFile: string, tmpDir: string) {
+  try {
+    await promisifedFs.unlink(classPathFile);
+    await promisifedFs.rmdir(tmpDir);
+  } catch {
+    // we couldn't delete temporary data in temporary folder, no big deal
+  }
 }
