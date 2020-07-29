@@ -78,30 +78,28 @@ export async function getCallGraph(
   targetPath: string,
   timeout?: number,
 ): Promise<Graph> {
-  const jarPath = await fetch(
-    config.CALL_GRAPH_GENERATOR_URL,
-    config.CALL_GRAPH_GENERATOR_CHECKSUM,
-  );
-  const targets = await timeIt('getEntrypoints', () => getTargets(targetPath));
-
-  const tmpDir = await promisifedFs.mkdtemp(
-    path.join(tempDir, 'call-graph-generator'),
-  );
-  const clasPathFile = path.join(tmpDir, 'callgraph-classpath');
-  await promisifedFs.writeFile(clasPathFile, classPath);
+  const [jarPath, targets, { tmpDir, classPathFile }] = await Promise.all([
+    fetch(
+      config.CALL_GRAPH_GENERATOR_URL,
+      config.CALL_GRAPH_GENERATOR_CHECKSUM,
+    ),
+    timeIt('getEntrypoints', () => getTargets(targetPath)),
+    writeClassPathToTempDir(classPath),
+  ]);
 
   const callgraphGenCommandArgs = getCallGraphGenCommandArgs(
-    clasPathFile,
+    classPathFile,
     jarPath,
     targets,
   );
+
   try {
-    const javaOutput = await timeIt('generateCallGraph', () =>
-      runJavaCommand(callgraphGenCommandArgs, targetPath, timeout),
-    );
-    const classPerJarMapping = await timeIt('mapClassesPerJar', () =>
-      getClassPerJarMapping(classPath),
-    );
+    const [javaOutput, classPerJarMapping] = await Promise.all([
+      timeIt('generateCallGraph', () =>
+        runJavaCommand(callgraphGenCommandArgs, targetPath, timeout),
+      ),
+      timeIt('mapClassesPerJar', () => getClassPerJarMapping(classPath)),
+    ]);
 
     return buildCallGraph(javaOutput, classPerJarMapping);
   } catch (e) {
@@ -112,10 +110,20 @@ export async function getCallGraph(
     );
   } finally {
     try {
-      promisifedFs.unlink(clasPathFile);
+      promisifedFs.unlink(classPathFile);
       promisifedFs.rmdir(tmpDir);
     } catch (e) {
       // we couldn't delete temporary data in temporary folder, no big deal
     }
   }
+}
+
+async function writeClassPathToTempDir(classPath) {
+  const tmpDir = await promisifedFs.mkdtemp(
+    path.join(tempDir, 'call-graph-generator'),
+  );
+  const classPathFile = path.join(tmpDir, 'callgraph-classpath');
+  await promisifedFs.writeFile(classPathFile, classPath);
+
+  return { tmpDir, classPathFile };
 }
