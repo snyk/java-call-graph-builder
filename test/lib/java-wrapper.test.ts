@@ -1,5 +1,9 @@
 import * as path from 'path';
-import { getClassPerJarMapping, getTargets } from '../../lib/java-wrapper';
+import {
+  getClassPerJarMapping,
+  getTargets,
+  getCallGraphGenCommandArgs,
+} from '../../lib/java-wrapper';
 
 test('classes per jar mapping is created', async () => {
   const mapping = await getClassPerJarMapping(
@@ -19,4 +23,10 @@ test('not target folder throw error', async () => {
   expect(
     getTargets('some-bogus-folder-that-does-not-exist'),
   ).rejects.toThrowError('Could not find a target folder');
+});
+
+test('callgraph arguments contain `--application-path-file`', async () => {
+  expect(
+    getCallGraphGenCommandArgs('someFileName', 'someJarPath', []),
+  ).toContain('--application-classpath-file');
 });

@@ -12,8 +12,10 @@ import { glob, readFile } from './promisified-fs-glob';
 import { toFQclassName } from './class-parsing';
 import { timeIt } from './metrics';
 import { debug } from './debug';
+import * as promisifedFs from './promisified-fs-glob';
+import * as tempDir from 'temp-dir';
 
-function getCallGraphGenCommandArgs(
+export function getCallGraphGenCommandArgs(
   classPath: string,
   jarPath: string,
   targets: string[],
@@ -22,7 +24,7 @@ function getCallGraphGenCommandArgs(
     '-cp',
     jarPath,
     'io.snyk.callgraph.app.App',
-    '--application-classpath',
+    '--application-classpath-file',
     classPath,
     '--dirs-to-get-entrypoints',
     targets.join(','),
@@ -76,24 +78,28 @@ export async function getCallGraph(
   targetPath: string,
   timeout?: number,
 ): Promise<Graph> {
-  const jarPath = await fetch(
-    config.CALL_GRAPH_GENERATOR_URL,
-    config.CALL_GRAPH_GENERATOR_CHECKSUM,
-  );
-  const targets = await timeIt('getEntrypoints', () => getTargets(targetPath));
+  const [jarPath, targets, { tmpDir, classPathFile }] = await Promise.all([
+    fetch(
+      config.CALL_GRAPH_GENERATOR_URL,
+      config.CALL_GRAPH_GENERATOR_CHECKSUM,
+    ),
+    timeIt('getEntrypoints', () => getTargets(targetPath)),
+    writeClassPathToTempDir(classPath),
+  ]);
 
   const callgraphGenCommandArgs = getCallGraphGenCommandArgs(
-    classPath,
+    classPathFile,
     jarPath,
     targets,
   );
+
   try {
-    const javaOutput = await timeIt('generateCallGraph', () =>
-      runJavaCommand(callgraphGenCommandArgs, targetPath, timeout),
-    );
-    const classPerJarMapping = await timeIt('mapClassesPerJar', () =>
-      getClassPerJarMapping(classPath),
-    );
+    const [javaOutput, classPerJarMapping] = await Promise.all([
+      timeIt('generateCallGraph', () =>
+        runJavaCommand(callgraphGenCommandArgs, targetPath, timeout),
+      ),
+      timeIt('mapClassesPerJar', () => getClassPerJarMapping(classPath)),
+    ]);
 
     return buildCallGraph(javaOutput, classPerJarMapping);
   } catch (e) {
@@ -102,5 +108,22 @@ export async function getCallGraph(
         ' ',
       )} failed with error: ${e}`,
     );
+  } finally {
+    try {
+      promisifedFs.unlink(classPathFile);
+      promisifedFs.rmdir(tmpDir);
+    } catch (e) {
+      // we couldn't delete temporary data in temporary folder, no big deal
+    }
   }
+}
+
+async function writeClassPathToTempDir(classPath) {
+  const tmpDir = await promisifedFs.mkdtemp(
+    path.join(tempDir, 'call-graph-generator'),
+  );
+  const classPathFile = path.join(tmpDir, 'callgraph-classpath');
+  await promisifedFs.writeFile(classPathFile, classPath);
+
+  return { tmpDir, classPathFile };
 }

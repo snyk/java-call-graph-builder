@@ -12,7 +12,6 @@ export async function getCallGraphMvn(
   const classPath = await timeIt('getMvnClassPath', () =>
     getClassPathFromMvn(targetPath),
   );
-
   return await timeIt('getCallGraph', () =>
     getCallGraph(classPath, targetPath, timeout),
   );

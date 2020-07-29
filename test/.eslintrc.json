@@ -11,7 +11,7 @@
     {
       "files": ["**/*.test.ts"],
       "parserOptions": {
-        "project": "./test/tsconfig.json"
+        "project": "./tsconfig.json"
       }
     }
   ]
