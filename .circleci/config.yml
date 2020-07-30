@@ -43,7 +43,13 @@ commands:
             git merge --no-edit "$CIRCLE_BRANCH"
       - attach_workspace:
           at: ~/snyk-java-call-graph-builder
-
+  install_maven:
+    steps:
+      - run:
+          name: Install java and maven
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y openjdk-8-jdk maven
 jobs:
   install:
     <<: *defaults
@@ -65,6 +71,7 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker
+      - install_maven
       - attach_workspace:
           at: ~/snyk-java-call-graph-builder
       - run:
