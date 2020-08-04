@@ -56,7 +56,7 @@ export async function getClassPerJarMapping(
   classPath: string,
 ): Promise<{ [index: string]: string }> {
   const classPerJarMapping: { [index: string]: string } = {};
-  for (const classPathItem of classPath.split(':')) {
+  for (const classPathItem of classPath.split(path.delimiter)) {
     // classpath can also contain local directories with classes - we don't need them for package mapping
     if (!classPathItem.endsWith('.jar')) {
       continue;
