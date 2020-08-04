@@ -8,12 +8,12 @@ import * as config from './config';
 import { execute } from './sub-process';
 import { fetch } from './fetch-snyk-java-call-graph-generator';
 import { buildCallGraph } from './call-graph';
+import * as promisifedFs from './promisified-fs-glob';
 import { glob, readFile } from './promisified-fs-glob';
 import { toFQclassName } from './class-parsing';
 import { timeIt } from './metrics';
-import { debug } from './debug';
-import * as promisifedFs from './promisified-fs-glob';
 import * as tempDir from 'temp-dir';
+import { MissingTargetFolderError } from './errors';
 
 export function getCallGraphGenCommandArgs(
   classPath: string,
@@ -31,22 +31,10 @@ export function getCallGraphGenCommandArgs(
   ];
 }
 
-async function runJavaCommand(
-  javaCommandArgs: string[],
-  targetPath: string,
-  timeout?: number,
-): Promise<string> {
-  debug(`executing java command: "java ${javaCommandArgs.join(' ')}"`);
-  return execute('java', javaCommandArgs, {
-    cwd: targetPath,
-    timeout,
-  });
-}
-
 export async function getTargets(targetPath: string): Promise<string[]> {
   const targetDirs = await glob(path.join(targetPath, '**/target'));
   if (!targetDirs.length) {
-    throw new Error('Could not find a target folder');
+    throw new MissingTargetFolderError(targetPath);
   }
 
   return targetDirs;
@@ -96,18 +84,15 @@ export async function getCallGraph(
   try {
     const [javaOutput, classPerJarMapping] = await Promise.all([
       timeIt('generateCallGraph', () =>
-        runJavaCommand(callgraphGenCommandArgs, targetPath, timeout),
+        execute('java', callgraphGenCommandArgs, {
+          cwd: targetPath,
+          timeout,
+        }),
       ),
       timeIt('mapClassesPerJar', () => getClassPerJarMapping(classPath)),
     ]);
 
     return buildCallGraph(javaOutput, classPerJarMapping);
-  } catch (e) {
-    throw new Error(
-      `java command 'java ${callgraphGenCommandArgs.join(
-        ' ',
-      )} failed with error: ${e}`,
-    );
   } finally {
     // Fire and forget - we don't have to wait for a deletion of a temporary file
     cleanupTempDir(classPathFile, tmpDir);

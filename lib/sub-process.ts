@@ -1,4 +1,6 @@
 import * as childProcess from 'child_process';
+import { debug } from './debug';
+import { SubprocessError, SubprocessTimeoutError } from './errors';
 
 export function execute(
   command: string,
@@ -17,16 +19,20 @@ export function execute(
     let stdout = '';
     let stderr = '';
 
+    debug(`executing command: "${command} ${args.join(' ')}"`);
     const proc = childProcess.spawn(command, args, spawnOptions);
 
     let timerId: NodeJS.Timer | null = null;
     if (options?.timeout) {
-      const timeoutSeconds = options.timeout / 1000;
       timerId = setTimeout(() => {
         proc.kill();
-        reject(
-          `Timeout; It took longer than ${timeoutSeconds}s to generate the call graph.`,
+        const err = new SubprocessTimeoutError(
+          command,
+          args.join(' '),
+          options.timeout || 0,
         );
+        debug(err.message);
+        reject(err);
       }, options.timeout);
     }
 
@@ -42,9 +48,11 @@ export function execute(
         clearTimeout(timerId);
       }
       if (code !== 0) {
-        return reject(stdout || stderr);
+        const err = new SubprocessError(command, args.join(' '), code);
+        debug(err.message);
+        return reject(err);
       }
-      resolve(stdout || stderr);
+      resolve(stdout);
     });
   });
 }
