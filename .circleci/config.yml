@@ -1,9 +1,19 @@
 version: 2.1
 
-defaults: &defaults
+orbs:
+  win: circleci/windows@2.2.0
+
+defaults: &defaults_unix
   resource_class: small
   docker:
     - image: node:12
+  working_directory: ~/snyk-java-call-graph-builder
+
+windows_defaults: &defaults_windows
+  environment:
+    npm_config_loglevel: silent
+  executor:
+    name: win/default
   working_directory: ~/snyk-java-call-graph-builder
 
 commands:
@@ -29,6 +39,12 @@ commands:
           root: .
           paths:
             - node_modules/
+  install_deps_windows:
+    description: Install dependencies on Windows
+    steps:
+      - run:
+          name: Install dependencies
+          command: npm install
   checkout_and_merge:
     steps:
       - checkout
@@ -43,20 +59,24 @@ commands:
             git merge --no-edit "$CIRCLE_BRANCH"
       - attach_workspace:
           at: ~/snyk-java-call-graph-builder
-  install_maven:
+  install_maven_unix:
     steps:
       - run:
           name: Install java and maven
           command: |
             sudo apt-get update
             sudo apt-get install -y openjdk-8-jdk maven
+  install_maven_windows:
+    description: Install maven
+    steps:
+      - run: choco install maven
 jobs:
   install:
-    <<: *defaults
+    <<: *defaults_unix
     steps:
       - install_deps
   lint:
-    <<: *defaults
+    <<: *defaults_unix
     steps:
       - checkout
       - attach_workspace:
@@ -64,8 +84,8 @@ jobs:
       - run:
           name: Run tests
           command: npm run lint
-  test-unit:
-    <<: *defaults
+  test-unit-unix:
+    <<: *defaults_unix
     docker:
       - image: circleci/node:12
     steps:
@@ -76,21 +96,40 @@ jobs:
       - run:
           name: Run unit tests
           command: npm run test:unit
-  test-integration:
-    <<: *defaults
+  test-integration-unix:
+    <<: *defaults_unix
     docker:
       - image: circleci/node:12
     steps:
       - checkout
       - setup_remote_docker
-      - install_maven
+      - install_maven_unix
       - attach_workspace:
           at: ~/snyk-java-call-graph-builder
       - run:
           name: Run integration tests
           command: npm run test:integration
+  test-unit-windows:
+    <<: *defaults_windows
+    steps:
+      - run: git config --global core.autocrlf false
+      - checkout
+      - install_deps_windows
+      - run:
+          name: Run unit tests
+          command: npm run test:unit
+  test-integration-windows:
+    <<: *defaults_windows
+    steps:
+      - run: git config --global core.autocrlf false
+      - checkout
+      - install_deps_windows
+      - install_maven_windows
+      - run:
+          name: Run integration tests
+          command: npm run test:integration
   build:
-    <<: *defaults
+    <<: *defaults_unix
     steps:
       - checkout_and_merge
       - run:
@@ -103,7 +142,7 @@ jobs:
           name: Build
           command: npm run build
   release:
-    <<: *defaults
+    <<: *defaults_unix
     steps:
       - checkout
       - run:
@@ -144,7 +183,7 @@ workflows:
             branches:
               ignore:
                 - master
-      - test-unit:
+      - test-unit-unix:
           name: Unit Tests
           context: nodejs-install
           requires:
@@ -153,11 +192,25 @@ workflows:
             branches:
               ignore:
                 - master
-      - test-integration:
+      - test-integration-unix:
           name: Integration Tests
           context: nodejs-install
           requires:
             - Install
+          filters:
+            branches:
+              ignore:
+                - master
+      - test-unit-windows:
+          name: Unit Tests Windows
+          context: nodejs-install
+          filters:
+            branches:
+              ignore:
+                - master
+      - test-integration-windows:
+          name: Integration Tests Windows
+          context: nodejs-install
           filters:
             branches:
               ignore:
