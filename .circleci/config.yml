@@ -43,7 +43,13 @@ commands:
             git merge --no-edit "$CIRCLE_BRANCH"
       - attach_workspace:
           at: ~/snyk-java-call-graph-builder
-
+  install_maven:
+    steps:
+      - run:
+          name: Install java and maven
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y openjdk-8-jdk maven
 jobs:
   install:
     <<: *defaults
@@ -58,7 +64,7 @@ jobs:
       - run:
           name: Run tests
           command: npm run lint
-  test:
+  test-unit:
     <<: *defaults
     docker:
       - image: circleci/node:12
@@ -68,8 +74,21 @@ jobs:
       - attach_workspace:
           at: ~/snyk-java-call-graph-builder
       - run:
-          name: Run tests
-          command: npm test
+          name: Run unit tests
+          command: npm run test:unit
+  test-integration:
+    <<: *defaults
+    docker:
+      - image: circleci/node:12
+    steps:
+      - checkout
+      - setup_remote_docker
+      - install_maven
+      - attach_workspace:
+          at: ~/snyk-java-call-graph-builder
+      - run:
+          name: Run integration tests
+          command: npm run test:integration
   build:
     <<: *defaults
     steps:
@@ -125,8 +144,17 @@ workflows:
             branches:
               ignore:
                 - master
-      - test:
-          name: Test
+      - test-unit:
+          name: Unit Tests
+          context: nodejs-install
+          requires:
+            - Install
+          filters:
+            branches:
+              ignore:
+                - master
+      - test-integration:
+          name: Integration Tests
           context: nodejs-install
           requires:
             - Install

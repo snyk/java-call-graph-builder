@@ -1,4 +1,4 @@
-import * as metrics from '../lib/metrics';
+import * as metrics from '../../lib/metrics';
 
 describe('timing metrics', () => {
   test('works if no metrics available', async () => {
