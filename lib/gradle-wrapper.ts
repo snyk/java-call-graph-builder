@@ -2,6 +2,7 @@ import 'source-map-support/register';
 import { execute } from './sub-process';
 import * as path from 'path';
 import * as fs from 'fs';
+import { ClassPathGenerationError } from './errors';
 
 export function getGradleCommandArgs(targetPath: string): string[] {
   const gradleArgs = [
@@ -27,29 +28,15 @@ export function getGradleCommand(targetPath: string): string {
   return 'gradle';
 }
 
-async function runGradleCommand(
-  gradleCommand: string,
-  gradleCommandArgs: string[],
+export async function getClassPathFromGradle(
   targetPath: string,
 ): Promise<string> {
-  return execute('gradle', gradleCommandArgs, { cwd: targetPath });
-}
-
-export async function getCallGraphGradle(targetPath: string): Promise<string> {
-  const gradleCommandArgs = getGradleCommandArgs(targetPath);
-  const gradleCommand = getGradleCommand(targetPath);
+  const cmd = getGradleCommand(targetPath);
+  const args = getGradleCommandArgs(targetPath);
   try {
-    const gradleOutput = await runGradleCommand(
-      gradleCommand,
-      gradleCommandArgs,
-      targetPath,
-    );
-    return gradleOutput.trim();
+    const output = await execute(cmd, args, { cwd: targetPath });
+    return output.trim();
   } catch (e) {
-    throw new Error(
-      `gradle command '${gradleCommand} ${gradleCommandArgs.join(
-        ' ',
-      )} failed with error: ${e}`,
-    );
+    throw new ClassPathGenerationError(e);
   }
 }
