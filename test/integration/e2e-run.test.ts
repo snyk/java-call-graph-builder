@@ -3,7 +3,7 @@ import * as fs from '../../lib/promisified-fs-glob';
 
 import { getCallGraphMvn } from '../../lib';
 
-jest.setTimeout(30000);
+jest.setTimeout(60000);
 
 let tmpFilePath;
 
