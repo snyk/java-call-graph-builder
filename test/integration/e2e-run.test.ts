@@ -3,7 +3,7 @@ import * as fs from '../../lib/promisified-fs-glob';
 
 import { getCallGraphMvn } from '../../lib';
 
-jest.setTimeout(30000);
+jest.setTimeout(60000);
 
 let tmpFilePath;
 
@@ -11,7 +11,10 @@ test('callgraph for maven is created', async () => {
   const mkdtempSpy = jest.spyOn(fs, 'mkdtemp');
   const writeFileSpy = jest.spyOn(fs, 'writeFile');
   await getCallGraphMvn(
-    path.join(__dirname, '../fixtures/java-reachability-playground'),
+    path.join(
+      __dirname,
+      ...'../fixtures/java-reachability-playground'.split('/'),
+    ),
   );
 
   // verify tempdir was created and file written

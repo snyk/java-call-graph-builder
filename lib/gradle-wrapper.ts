@@ -8,7 +8,7 @@ export function getGradleCommandArgs(targetPath: string): string[] {
   const gradleArgs = [
     'printClasspath',
     '-I',
-    path.join(__dirname, '../bin/init.gradle'),
+    path.join(__dirname, ...'../bin/init.gradle'.split('/')),
     '-q',
   ];
   if (targetPath) {
@@ -19,7 +19,7 @@ export function getGradleCommandArgs(targetPath: string): string[] {
 }
 
 export function getGradleCommand(targetPath: string): string {
-  const pathToWrapper = path.resolve(targetPath || '', './gradlew');
+  const pathToWrapper = path.resolve(targetPath || '', '.', 'gradlew');
 
   if (fs.existsSync(pathToWrapper)) {
     return pathToWrapper;

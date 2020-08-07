@@ -9,13 +9,18 @@ test('classes per jar mapping is created', async () => {
   const mapping = await getClassPerJarMapping(
     path.join(
       __dirname,
-      '../fixtures/example-java-project/target/todolist-core-1.0-SNAPSHOT.jar',
+      ...'../fixtures/example-java-project/target/todolist-core-1.0-SNAPSHOT.jar'.split(
+        '/',
+      ),
     ),
   );
 
   for (const item of Object.values(mapping)) {
-    expect(item.startsWith('/')).toBeTruthy();
-    expect(item.endsWith('/todolist-core-1.0-SNAPSHOT.jar')).toBeTruthy();
+    const root = __dirname.split(path.sep)[0];
+    expect(item.startsWith(root)).toBeTruthy();
+    expect(
+      item.endsWith(`${path.sep}todolist-core-1.0-SNAPSHOT.jar`),
+    ).toBeTruthy();
   }
 });
 
