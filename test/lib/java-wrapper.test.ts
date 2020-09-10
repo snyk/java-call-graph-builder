@@ -1,9 +1,9 @@
 import * as path from 'path';
 import {
   getClassPerJarMapping,
-  getTargets,
   getCallGraphGenCommandArgs,
 } from '../../lib/java-wrapper';
+import { getTargets } from '../../lib/index';
 
 test('classes per jar mapping is created', async () => {
   const mapping = await getClassPerJarMapping(
@@ -26,7 +26,7 @@ test('classes per jar mapping is created', async () => {
 
 test('not target folder throw error', async () => {
   expect(
-    getTargets('some-bogus-folder-that-does-not-exist'),
+    getTargets('some-bogus-folder-that-does-not-exist', 'mvn'),
   ).rejects.toThrowError(
     'Could not find the target folder starting in "some-bogus-folder-that-does-not-exist"',
   );

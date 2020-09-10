@@ -9,11 +9,10 @@ import { execute } from './sub-process';
 import { fetch } from './fetch-snyk-java-call-graph-generator';
 import { buildCallGraph } from './call-graph';
 import * as promisifedFs from './promisified-fs-glob';
-import { glob, readFile } from './promisified-fs-glob';
+import { readFile } from './promisified-fs-glob';
 import { toFQclassName } from './class-parsing';
 import { timeIt } from './metrics';
 import * as tempDir from 'temp-dir';
-import { MissingTargetFolderError } from './errors';
 
 export function getCallGraphGenCommandArgs(
   classPath: string,
@@ -29,15 +28,6 @@ export function getCallGraphGenCommandArgs(
     '--dirs-to-get-entrypoints',
     targets.join(','),
   ];
-}
-
-export async function getTargets(targetPath: string): Promise<string[]> {
-  const targetDirs = await glob(path.join(targetPath, '**/target'));
-  if (!targetDirs.length) {
-    throw new MissingTargetFolderError(targetPath);
-  }
-
-  return targetDirs;
 }
 
 export async function getClassPerJarMapping(
@@ -64,14 +54,14 @@ export async function getClassPerJarMapping(
 export async function getCallGraph(
   classPath: string,
   targetPath: string,
+  targets: string[],
   timeout?: number,
 ): Promise<Graph> {
-  const [jarPath, targets, { tmpDir, classPathFile }] = await Promise.all([
+  const [jarPath, { tmpDir, classPathFile }] = await Promise.all([
     fetch(
       config.CALL_GRAPH_GENERATOR_URL,
       config.CALL_GRAPH_GENERATOR_CHECKSUM,
     ),
-    timeIt('getEntrypoints', () => getTargets(targetPath)),
     writeClassPathToTempDir(classPath),
   ]);
 
