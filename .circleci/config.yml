@@ -59,6 +59,26 @@ commands:
             git merge --no-edit "$CIRCLE_BRANCH"
       - attach_workspace:
           at: ~/snyk-java-call-graph-builder
+  install_gradle_windows:
+    description: Install gradle
+    steps:
+      - run: |
+          choco install gradle
+  install_sdkman:
+    description: Install SDKMAN
+    steps:
+      - run:
+          name: Installing SDKMAN
+          command: |
+            curl -s "https://get.sdkman.io?rcupdate=false" | bash
+            echo -e '\nsource "/home/circleci/.sdkman/bin/sdkman-init.sh"' >> $BASH_ENV
+            source $BASH_ENV
+  install_gradle_unix:
+    description: Install gradle
+    steps:
+      - run:
+          name: Installing Gradle
+          command: sdk install gradle
   install_maven_unix:
     steps:
       - run:
@@ -104,11 +124,14 @@ jobs:
       - checkout
       - setup_remote_docker
       - install_maven_unix
+      - install_sdkman
+      - install_gradle_unix
       - attach_workspace:
           at: ~/snyk-java-call-graph-builder
       - run:
           name: Run integration tests
-          command: npm run test:integration
+          command: |
+            npm run test:integration
   test-unit-windows:
     <<: *defaults_windows
     steps:
@@ -125,6 +148,7 @@ jobs:
       - checkout
       - install_deps_windows
       - install_maven_windows
+      - install_gradle_windows
       - run:
           name: Run integration tests
           command: npm run test:integration

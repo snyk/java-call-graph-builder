@@ -30,7 +30,7 @@ export async function getCallGraphMvn(
   }
 }
 
-export async function getClassGraphGradle(
+export async function getCallGraphGradle(
   targetPath: string,
   timeout?: number,
 ): Promise<Graph> {

@@ -37,6 +37,7 @@ export async function getClassPathFromGradle(
     const output = await execute(cmd, args, { cwd: targetPath });
     return output.trim();
   } catch (e) {
+    console.log(e);
     throw new ClassPathGenerationError(e);
   }
 }
