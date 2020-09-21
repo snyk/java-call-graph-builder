@@ -4,19 +4,22 @@ import { getClassPathFromGradle } from './gradle-wrapper';
 import { getCallGraph } from './java-wrapper';
 import { Graph } from 'graphlib';
 import { timeIt, getMetrics, Metrics } from './metrics';
-import { CallGraphGenerationError } from './errors';
+import { CallGraphGenerationError, MissingTargetFolderError } from './errors';
+import { glob } from './promisified-fs-glob';
+import * as path from 'path';
 
 export async function getCallGraphMvn(
   targetPath: string,
   timeout?: number,
 ): Promise<Graph> {
   try {
-    const classPath = await timeIt('getMvnClassPath', () =>
-      getClassPathFromMvn(targetPath),
-    );
+    const [classPath, targets] = await Promise.all([
+      timeIt('getMvnClassPath', () => getClassPathFromMvn(targetPath)),
+      timeIt('getEntrypoints', () => getTargets(targetPath, 'mvn')),
+    ]);
 
     return await timeIt('getCallGraph', () =>
-      getCallGraph(classPath, targetPath, timeout),
+      getCallGraph(classPath, targetPath, targets, timeout),
     );
   } catch (e) {
     throw new CallGraphGenerationError(
@@ -27,19 +30,41 @@ export async function getCallGraphMvn(
   }
 }
 
-export async function getClassGraphGradle(
+export async function getCallGraphGradle(
   targetPath: string,
   timeout?: number,
 ): Promise<Graph> {
-  const classPath = await timeIt('getGradleClassPath', () =>
-    getClassPathFromGradle(targetPath),
-  );
+  const [classPath, targets] = await Promise.all([
+    timeIt('getGradleClassPath', () => getClassPathFromGradle(targetPath)),
+    timeIt('getEntrypoints', () => getTargets(targetPath, 'gradle')),
+  ]);
 
   return await timeIt('getCallGraph', () =>
-    getCallGraph(classPath, targetPath, timeout),
+    getCallGraph(classPath, targetPath, targets, timeout),
   );
 }
 
 export function runtimeMetrics(): Metrics {
   return getMetrics();
+}
+
+export async function getTargets(
+  targetPath: string,
+  packageManager: 'mvn' | 'gradle',
+): Promise<string[]> {
+  const targetFoldersByPackageManager = {
+    mvn: 'target',
+    gradle: 'build',
+  };
+  const targetDirs = await glob(
+    path.join(
+      targetPath,
+      `**/${targetFoldersByPackageManager[packageManager]}`,
+    ),
+  );
+  if (!targetDirs.length) {
+    throw new MissingTargetFolderError(targetPath);
+  }
+
+  return targetDirs;
 }
