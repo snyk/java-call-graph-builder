@@ -3,7 +3,6 @@ import {
   getClassPerJarMapping,
   getCallGraphGenCommandArgs,
 } from '../../lib/java-wrapper';
-import { getTargets } from '../../lib/index';
 
 test('classes per jar mapping is created', async () => {
   const mapping = await getClassPerJarMapping(
@@ -22,14 +21,6 @@ test('classes per jar mapping is created', async () => {
       item.endsWith(`${path.sep}todolist-core-1.0-SNAPSHOT.jar`),
     ).toBeTruthy();
   }
-});
-
-test('not target folder throw error', async () => {
-  expect(
-    getTargets('some-bogus-folder-that-does-not-exist', 'mvn'),
-  ).rejects.toThrowError(
-    'Could not find the target folder starting in "some-bogus-folder-that-does-not-exist"',
-  );
 });
 
 test('callgraph arguments contain `--application-path-file`', async () => {
