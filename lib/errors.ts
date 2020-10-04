@@ -61,8 +61,17 @@ export class SubprocessTimeoutError extends Error {
 }
 
 export class SubprocessError extends Error {
-  constructor(command: string, args: string, exitCode: number) {
-    super(`The command "${command} ${args}" exited with code ${exitCode}`);
+  constructor(
+    command: string,
+    args: string,
+    exitCode: number,
+    stdError?: string,
+  ) {
+    super(
+      `The command "${command} ${args}" exited with code ${exitCode}${
+        stdError ? ', Standard Error Output: ' + stdError : ''
+      }`,
+    );
     Object.setPrototypeOf(this, SubprocessError.prototype);
   }
 }
