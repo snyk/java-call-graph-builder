@@ -48,7 +48,17 @@ export function execute(
         clearTimeout(timerId);
       }
       if (code !== 0) {
-        const err = new SubprocessError(command, args.join(' '), code);
+        const trimmedStackTrace = stderr
+          .replace(/\t/g, '')
+          .split('\n')
+          .slice(0, 5)
+          .join(', ');
+        const err = new SubprocessError(
+          command,
+          args.join(' '),
+          code,
+          trimmedStackTrace,
+        );
         debug(err.message);
         return reject(err);
       }
