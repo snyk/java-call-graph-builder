@@ -24,6 +24,7 @@ function createProgressBar(total: number, name: string): ProgressBar {
       incomplete: '.',
       width: 20,
       total: total / 1000,
+      clear: true,
     },
   );
 }
