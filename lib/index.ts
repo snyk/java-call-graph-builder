@@ -63,7 +63,7 @@ export async function getTargets(
     ),
   );
   if (!targetDirs.length) {
-    throw new MissingTargetFolderError(targetPath);
+    throw new MissingTargetFolderError(targetPath, packageManager);
   }
 
   return targetDirs;

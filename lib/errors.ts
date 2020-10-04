@@ -32,12 +32,19 @@ export class EmptyClassPathError extends Error {
 }
 
 export class MissingTargetFolderError extends Error {
-  public readonly userMessage =
-    "Could not find the project's target folder. Please compile your code by running `mvn compile` and try again.";
+  public readonly userMessage: string;
+  errorMessagePerPackageManager = {
+    mvn:
+      "Could not find the project's target folder. Please compile your code by running `mvn compile` and try again.",
+    gradle:
+      "Could not find the project's target folder. Please compile your code and try again.",
+  };
 
-  constructor(targetPath: string) {
+  constructor(targetPath: string, packageManager: 'mvn' | 'gradle') {
     super(`Could not find the target folder starting in "${targetPath}"`);
     Object.setPrototypeOf(this, MissingTargetFolderError.prototype);
+
+    this.userMessage = this.errorMessagePerPackageManager[packageManager];
   }
 }
 
