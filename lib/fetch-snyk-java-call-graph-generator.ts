@@ -55,9 +55,8 @@ async function downloadAnalyzer(
             return reject(err);
           }
           matchChecksum = verifyChecksum(req, expectedChecksum);
-          if (ciInfo.isCI) {
-            console.log(`downloading ${JAR_NAME} ...`);
-          } else {
+          debug(`downloading ${JAR_NAME} ...`);
+          if (!ciInfo.isCI) {
             const total = parseInt(res.headers['content-length'], 10);
             progressBar = createProgressBar(total, JAR_NAME);
           }
@@ -123,7 +122,7 @@ export async function fetch(
     ) {
       return localPath;
     }
-    console.log(`New version of ${JAR_NAME} available`);
+    debug(`new version of ${JAR_NAME} available`);
   }
 
   if (!(await promisifedFs.exists(path.dirname(localPath)))) {
