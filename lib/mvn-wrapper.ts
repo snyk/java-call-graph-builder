@@ -2,16 +2,26 @@ import 'source-map-support/register';
 import { execute } from './sub-process';
 import { ClassPathGenerationError, EmptyClassPathError } from './errors';
 
-function getMvnCommandArgsForMvnExec(targetPath: string): string[] {
-  return [
-    '-q',
-    'exec:exec',
-    '-Dexec.classpathScope="compile"',
-    '-Dexec.executable="echo"',
-    '-Dexec.args="%classpath"',
-    '-f',
-    targetPath,
-  ];
+export function getMvnCommandArgsForMvnExec(targetPath: string): string[] {
+  return process.platform === 'win32'
+    ? [
+        '-q',
+        'exec:exec',
+        '-Dexec.classpathScope="compile"',
+        '-Dexec.executable="cmd"',
+        '-Dexec.args="/c echo %classpath"',
+        '-f',
+        targetPath,
+      ]
+    : [
+        '-q',
+        'exec:exec',
+        '-Dexec.classpathScope="compile"',
+        '-Dexec.executable="echo"',
+        '-Dexec.args="%classpath"',
+        '-f',
+        targetPath,
+      ];
 }
 
 function getMvnCommandArgsForDependencyPlugin(targetPath: string): string[] {

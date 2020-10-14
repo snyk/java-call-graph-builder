@@ -2,6 +2,7 @@ import {
   parseMvnDependencyPluginCommandOutput,
   mergeMvnClassPaths,
   parseMvnExecCommandOutput,
+  getMvnCommandArgsForMvnExec,
 } from '../../lib/mvn-wrapper';
 
 import * as fs from 'fs';
@@ -48,4 +49,29 @@ test('merging mvn class paths', async () => {
   expect(mergeMvnClassPaths(dependencyPluginClassPaths)).toEqual(
     mergedClassPath,
   );
+});
+
+test('getMvnCommandArgsForMvnExec - gets the right mvn commands', () => {
+  const targetPath = 'pathToClasspath';
+  if (process.platform === 'win32') {
+    expect(getMvnCommandArgsForMvnExec(targetPath)).toEqual([
+      '-q',
+      'exec:exec',
+      '-Dexec.classpathScope="compile"',
+      '-Dexec.executable="cmd"',
+      '-Dexec.args="/c echo %classpath"',
+      '-f',
+      targetPath,
+    ]);
+  } else {
+    expect(getMvnCommandArgsForMvnExec(targetPath)).toEqual([
+      '-q',
+      'exec:exec',
+      '-Dexec.classpathScope="compile"',
+      '-Dexec.executable="echo"',
+      '-Dexec.args="%classpath"',
+      '-f',
+      targetPath,
+    ]);
+  }
 });

@@ -25,8 +25,9 @@ It is an internal component intended for use by our [CLI maven plugin](https://g
 
 | OS     |  Supported |
 |--------|------------|
-| Linux  | ✅          |
-| OSX    | ️✅          |
+| Linux  |  ✅        |
+| OSX    | ️✅        |
+| Windows| ️✅        |
 
 ## Supported Node versions
 
