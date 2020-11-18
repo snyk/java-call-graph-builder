@@ -3,6 +3,7 @@ import {
   mergeMvnClassPaths,
   parseMvnExecCommandOutput,
   getMvnCommandArgsForMvnExec,
+  buildFullClassPath,
 } from '../../lib/mvn-wrapper';
 
 import * as fs from 'fs';
@@ -74,4 +75,25 @@ test('getMvnCommandArgsForMvnExec - gets the right mvn commands', () => {
       targetPath,
     ]);
   }
+});
+
+test('buildFullClassPath', () => {
+  function buildPath(entries: string[]): string {
+    return entries.join(path.delimiter);
+  }
+
+  expect(buildFullClassPath(buildPath(['aaa', 'bbb']), 'ccc')).toEqual(
+    buildPath(['aaa', 'bbb', 'ccc']),
+  );
+  expect(buildFullClassPath('aaa', 'bbb')).toEqual(buildPath(['aaa', 'bbb']));
+  expect(buildFullClassPath('aaa', '')).toEqual('aaa');
+  expect(buildFullClassPath('', 'aaa')).toEqual('aaa');
+  expect(buildFullClassPath(`aaa${path.delimiter}`, '')).toEqual('aaa');
+  expect(buildFullClassPath(`aaa${path.delimiter}`, 'bbb')).toEqual(
+    buildPath(['aaa', 'bbb']),
+  );
+  expect(
+    buildFullClassPath(`aaa${path.delimiter}${path.delimiter}`, 'bbb'),
+  ).toEqual(buildPath(['aaa', 'bbb']));
+  expect(buildFullClassPath('', '')).toEqual('');
 });
