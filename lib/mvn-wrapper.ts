@@ -6,18 +6,27 @@ import * as path from 'path';
 import * as tmp from 'tmp';
 import { debug } from './debug';
 
+const os = require('os');
+
 async function runCommandWithOutputToFile(
   f: (string) => Promise<void>,
 ): Promise<string> {
   // NOTE(alexmu): We have to do this little dance with output written to files
   // because that seems to be the only way to get the output without having to
   // parse maven logs
-  const outputFile = tmp.tmpNameSync();
+  const outputName = tmp.tmpNameSync();
   try {
-    await f(outputFile);
-    return fs.readFileSync(outputFile, 'utf8');
+    await f(outputName);
+    return fs.readFileSync(outputName, 'utf8');
+  } catch (error) {
+    debug(`Failed to execute command. ${error}`);
+    throw error;
   } finally {
-    fs.unlinkSync(outputFile);
+    try {
+      fs.unlinkSync(outputName);
+    } catch (error) {
+      debug(`unlinkSync failed. ${error}`);
+    }
   }
 }
 
@@ -108,7 +117,7 @@ function getMvnCommandArgsForDependencyPlugin(targetPath: string): string[] {
 export function parseMvnDependencyPluginCommandOutput(
   mvnCommandOutput: string,
 ): string[] {
-  const outputLines = mvnCommandOutput.split('\n');
+  const outputLines = mvnCommandOutput.split(os.EOL);
   const mvnClassPaths: string[] = [];
   let startIndex = 0;
   let i = outputLines.indexOf('[INFO] Dependencies classpath:', startIndex);
@@ -125,7 +134,7 @@ export function parseMvnDependencyPluginCommandOutput(
 
 // NOTE(alexmu): This is deprecated, and will be removed in the future
 export function parseMvnExecCommandOutput(mvnCommandOutput: string): string[] {
-  return mvnCommandOutput.trim().split('\n');
+  return mvnCommandOutput.trim().split(os.EOL);
 }
 
 // NOTE(alexmu): This is deprecated, and will be removed in the future
