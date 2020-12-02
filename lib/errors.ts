@@ -35,7 +35,9 @@ export class MissingTargetFolderError extends Error {
   public readonly userMessage: string;
   errorMessagePerPackageManager = {
     mvn:
-      "Could not find the project's target folder. Please compile your code by running `mvn compile` and try again.",
+      "Could not find the project's output directory. Please build your project and try again. " +
+      'The reachable vulnerabilities feature only supports the default Maven project layout, ' +
+      "where the output directory is named 'target'.",
     gradle:
       "Could not find the project's target folder. Please compile your code and try again.",
   };
@@ -73,5 +75,12 @@ export class SubprocessError extends Error {
       }`,
     );
     Object.setPrototypeOf(this, SubprocessError.prototype);
+  }
+}
+
+export class MalformedModulesSpecError extends Error {
+  constructor(modulesXml: string) {
+    super(`Malformed modules XML: ${modulesXml}`);
+    Object.setPrototypeOf(this, MalformedModulesSpecError.prototype);
   }
 }

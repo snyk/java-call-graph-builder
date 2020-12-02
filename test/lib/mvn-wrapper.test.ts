@@ -1,134 +1,99 @@
 import {
-  parseMvnDependencyPluginCommandOutput,
-  mergeMvnClassPaths,
-  parseMvnExecCommandOutput,
-  getMvnCommandArgsForMvnExec,
-  buildFullClassPath,
+  MavenModule,
+  MavenProject,
+  parseModuleNames,
 } from '../../lib/mvn-wrapper';
-
-import * as fs from 'fs';
+import { MalformedModulesSpecError } from '../../lib/errors';
+import { ClassPath } from '../../lib/classpath';
 import * as path from 'path';
 
-const dependencyPluginClassPaths = [
-  '/Users/mila/.m2/repository/org/springframework/spring-orm/3.2.6.RELEASE/spring-orm-3.2.6.RELEASE.jar:/Users/mila/.m2/repository/aopalliance/aopalliance/1.0/aopalliance-1.0.jar:/Users/mila/.m2/repository/org/springframework/spring-beans/3.2.6.RELEASE/spring-beans-3.2.6.RELEASE.jar:/Users/mila/.m2/repository/org/springframework/spring-core/3.2.6.RELEASE/spring-core-3.2.6.RELEASE.jar:/Users/mila/.m2/repository/commons-logging/commons-logging/1.1.1/commons-logging-1.1.1.jar:/Users/mila/.m2/repository/org/springframework/spring-jdbc/3.2.6.RELEASE/spring-jdbc-3.2.6.RELEASE.jar:/Users/mila/.m2/repository/org/springframework/spring-tx/3.2.6.RELEASE/spring-tx-3.2.6.RELEASE.jar:/Users/mila/.m2/repository/org/springframework/spring-aspects/3.2.6.RELEASE/spring-aspects-3.2.6.RELEASE.jar:/Users/mila/.m2/repository/org/springframework/spring-context-support/3.2.6.RELEASE/spring-context-support-3.2.6.RELEASE.jar:/Users/mila/.m2/repository/org/springframework/spring-context/3.2.6.RELEASE/spring-context-3.2.6.RELEASE.jar:/Users/mila/.m2/repository/org/springframework/spring-aop/3.2.6.RELEASE/spring-aop-3.2.6.RELEASE.jar:/Users/mila/.m2/repository/org/springframework/spring-expression/3.2.6.RELEASE/spring-expression-3.2.6.RELEASE.jar:/Users/mila/.m2/repository/cglib/cglib/2.2.2/cglib-2.2.2.jar:/Users/mila/.m2/repository/asm/asm/3.3.1/asm-3.3.1.jar:/Users/mila/.m2/repository/org/aspectj/aspectjweaver/1.8.2/aspectjweaver-1.8.2.jar:/Users/mila/.m2/repository/c3p0/c3p0/0.9.1.2/c3p0-0.9.1.2.jar:/Users/mila/.m2/repository/org/hsqldb/hsqldb/2.3.2/hsqldb-2.3.2.jar:/Users/mila/.m2/repository/org/hibernate/hibernate-core/4.3.7.Final/hibernate-core-4.3.7.Final.jar:/Users/mila/.m2/repository/org/jboss/logging/jboss-logging/3.1.3.GA/jboss-logging-3.1.3.GA.jar:/Users/mila/.m2/repository/org/jboss/logging/jboss-logging-annotations/1.2.0.Beta1/jboss-logging-annotations-1.2.0.Beta1.jar:/Users/mila/.m2/repository/org/jboss/spec/javax/transaction/jboss-transaction-api_1.2_spec/1.0.0.Final/jboss-transaction-api_1.2_spec-1.0.0.Final.jar:/Users/mila/.m2/repository/dom4j/dom4j/1.6.1/dom4j-1.6.1.jar:/Users/mila/.m2/repository/xml-apis/xml-apis/1.0.b2/xml-apis-1.0.b2.jar:/Users/mila/.m2/repository/org/hibernate/common/hibernate-commons-annotations/4.0.5.Final/hibernate-commons-annotations-4.0.5.Final.jar:/Users/mila/.m2/repository/org/hibernate/javax/persistence/hibernate-jpa-2.1-api/1.0.0.Final/hibernate-jpa-2.1-api-1.0.0.Final.jar:/Users/mila/.m2/repository/org/javassist/javassist/3.18.1-GA/javassist-3.18.1-GA.jar:/Users/mila/.m2/repository/antlr/antlr/2.7.7/antlr-2.7.7.jar:/Users/mila/.m2/repository/org/jboss/jandex/1.1.0.Final/jandex-1.1.0.Final.jar:/Users/mila/.m2/repository/org/hibernate/hibernate-entitymanager/4.3.7.Final/hibernate-entitymanager-4.3.7.Final.jar:/Users/mila/.m2/repository/org/hibernate/javax/persistence/hibernate-jpa-2.0-api/1.0.1.Final/hibernate-jpa-2.0-api-1.0.1.Final.jar:/Users/mila/.m2/repository/commons-collections/commons-collections/3.2.2/commons-collections-3.2.2.jar:/Users/mila/.m2/repository/junit/junit/4.12/junit-4.12.jar:/Users/mila/.m2/repository/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar:/Users/mila/.m2/repository/org/springframework/spring-test/3.2.6.RELEASE/spring-test-3.2.6.RELEASE.jar',
-  '/Users/mila/.m2/repository/io/github/snyk/todolist-core/1.0-SNAPSHOT/todolist-core-1.0-SNAPSHOT.jar:/Users/mila/.m2/repository/org/springframework/spring-orm/3.2.6.RELEASE/spring-orm-3.2.6.RELEASE.jar:/Users/mila/.m2/repository/aopalliance/aopalliance/1.0/aopalliance-1.0.jar:/Users/mila/.m2/repository/org/springframework/spring-beans/3.2.6.RELEASE/spring-beans-3.2.6.RELEASE.jar:/Users/mila/.m2/repository/org/springframework/spring-core/3.2.6.RELEASE/spring-core-3.2.6.RELEASE.jar:/Users/mila/.m2/repository/commons-logging/commons-logging/1.1.1/commons-logging-1.1.1.jar:/Users/mila/.m2/repository/org/springframework/spring-jdbc/3.2.6.RELEASE/spring-jdbc-3.2.6.RELEASE.jar:/Users/mila/.m2/repository/org/springframework/spring-tx/3.2.6.RELEASE/spring-tx-3.2.6.RELEASE.jar:/Users/mila/.m2/repository/org/springframework/spring-aspects/3.2.6.RELEASE/spring-aspects-3.2.6.RELEASE.jar:/Users/mila/.m2/repository/org/springframework/spring-context-support/3.2.6.RELEASE/spring-context-support-3.2.6.RELEASE.jar:/Users/mila/.m2/repository/org/springframework/spring-context/3.2.6.RELEASE/spring-context-3.2.6.RELEASE.jar:/Users/mila/.m2/repository/org/springframework/spring-aop/3.2.6.RELEASE/spring-aop-3.2.6.RELEASE.jar:/Users/mila/.m2/repository/org/springframework/spring-expression/3.2.6.RELEASE/spring-expression-3.2.6.RELEASE.jar:/Users/mila/.m2/repository/cglib/cglib/2.2.2/cglib-2.2.2.jar:/Users/mila/.m2/repository/asm/asm/3.3.1/asm-3.3.1.jar:/Users/mila/.m2/repository/org/aspectj/aspectjweaver/1.8.2/aspectjweaver-1.8.2.jar:/Users/mila/.m2/repository/c3p0/c3p0/0.9.1.2/c3p0-0.9.1.2.jar:/Users/mila/.m2/repository/org/hsqldb/hsqldb/2.3.2/hsqldb-2.3.2.jar:/Users/mila/.m2/repository/org/hibernate/hibernate-core/4.3.7.Final/hibernate-core-4.3.7.Final.jar:/Users/mila/.m2/repository/org/jboss/logging/jboss-logging-annotations/1.2.0.Beta1/jboss-logging-annotations-1.2.0.Beta1.jar:/Users/mila/.m2/repository/org/jboss/spec/javax/transaction/jboss-transaction-api_1.2_spec/1.0.0.Final/jboss-transaction-api_1.2_spec-1.0.0.Final.jar:/Users/mila/.m2/repository/dom4j/dom4j/1.6.1/dom4j-1.6.1.jar:/Users/mila/.m2/repository/xml-apis/xml-apis/1.0.b2/xml-apis-1.0.b2.jar:/Users/mila/.m2/repository/org/hibernate/common/hibernate-commons-annotations/4.0.5.Final/hibernate-commons-annotations-4.0.5.Final.jar:/Users/mila/.m2/repository/org/hibernate/javax/persistence/hibernate-jpa-2.1-api/1.0.0.Final/hibernate-jpa-2.1-api-1.0.0.Final.jar:/Users/mila/.m2/repository/org/javassist/javassist/3.18.1-GA/javassist-3.18.1-GA.jar:/Users/mila/.m2/repository/antlr/antlr/2.7.7/antlr-2.7.7.jar:/Users/mila/.m2/repository/org/jboss/jandex/1.1.0.Final/jandex-1.1.0.Final.jar:/Users/mila/.m2/repository/org/hibernate/hibernate-entitymanager/4.3.7.Final/hibernate-entitymanager-4.3.7.Final.jar:/Users/mila/.m2/repository/org/hibernate/javax/persistence/hibernate-jpa-2.0-api/1.0.1.Final/hibernate-jpa-2.0-api-1.0.1.Final.jar:/Users/mila/.m2/repository/commons-collections/commons-collections/3.2.2/commons-collections-3.2.2.jar:/Users/mila/.m2/repository/javax/javaee-web-api/6.0/javaee-web-api-6.0.jar:/Users/mila/.m2/repository/javax/servlet/jstl/1.2/jstl-1.2.jar:/Users/mila/.m2/repository/org/hibernate/hibernate-validator/4.3.1.Final/hibernate-validator-4.3.1.Final.jar:/Users/mila/.m2/repository/javax/validation/validation-api/1.0.0.GA/validation-api-1.0.0.GA.jar:/Users/mila/.m2/repository/org/jboss/logging/jboss-logging/3.1.0.CR2/jboss-logging-3.1.0.CR2.jar',
-  '/Users/mila/.m2/repository/io/github/snyk/todolist-web-common/1.0-SNAPSHOT/todolist-web-common-1.0-SNAPSHOT.jar:/Users/mila/.m2/repository/io/github/snyk/todolist-core/1.0-SNAPSHOT/todolist-core-1.0-SNAPSHOT.jar:/Users/mila/.m2/repository/org/springframework/spring-orm/3.2.6.RELEASE/spring-orm-3.2.6.RELEASE.jar:/Users/mila/.m2/repository/org/springframework/spring-jdbc/3.2.6.RELEASE/spring-jdbc-3.2.6.RELEASE.jar:/Users/mila/.m2/repository/org/springframework/spring-tx/3.2.6.RELEASE/spring-tx-3.2.6.RELEASE.jar:/Users/mila/.m2/repository/org/springframework/spring-aspects/3.2.6.RELEASE/spring-aspects-3.2.6.RELEASE.jar:/Users/mila/.m2/repository/org/springframework/spring-context-support/3.2.6.RELEASE/spring-context-support-3.2.6.RELEASE.jar:/Users/mila/.m2/repository/cglib/cglib/2.2.2/cglib-2.2.2.jar:/Users/mila/.m2/repository/asm/asm/3.3.1/asm-3.3.1.jar:/Users/mila/.m2/repository/org/aspectj/aspectjweaver/1.8.2/aspectjweaver-1.8.2.jar:/Users/mila/.m2/repository/c3p0/c3p0/0.9.1.2/c3p0-0.9.1.2.jar:/Users/mila/.m2/repository/org/hsqldb/hsqldb/2.3.2/hsqldb-2.3.2.jar:/Users/mila/.m2/repository/org/hibernate/hibernate-core/4.3.7.Final/hibernate-core-4.3.7.Final.jar:/Users/mila/.m2/repository/org/jboss/logging/jboss-logging-annotations/1.2.0.Beta1/jboss-logging-annotations-1.2.0.Beta1.jar:/Users/mila/.m2/repository/org/jboss/spec/javax/transaction/jboss-transaction-api_1.2_spec/1.0.0.Final/jboss-transaction-api_1.2_spec-1.0.0.Final.jar:/Users/mila/.m2/repository/dom4j/dom4j/1.6.1/dom4j-1.6.1.jar:/Users/mila/.m2/repository/xml-apis/xml-apis/1.0.b2/xml-apis-1.0.b2.jar:/Users/mila/.m2/repository/org/hibernate/common/hibernate-commons-annotations/4.0.5.Final/hibernate-commons-annotations-4.0.5.Final.jar:/Users/mila/.m2/repository/org/hibernate/javax/persistence/hibernate-jpa-2.1-api/1.0.0.Final/hibernate-jpa-2.1-api-1.0.0.Final.jar:/Users/mila/.m2/repository/org/javassist/javassist/3.18.1-GA/javassist-3.18.1-GA.jar:/Users/mila/.m2/repository/antlr/antlr/2.7.7/antlr-2.7.7.jar:/Users/mila/.m2/repository/org/jboss/jandex/1.1.0.Final/jandex-1.1.0.Final.jar:/Users/mila/.m2/repository/org/hibernate/hibernate-entitymanager/4.3.7.Final/hibernate-entitymanager-4.3.7.Final.jar:/Users/mila/.m2/repository/org/hibernate/javax/persistence/hibernate-jpa-2.0-api/1.0.1.Final/hibernate-jpa-2.0-api-1.0.1.Final.jar:/Users/mila/.m2/repository/commons-collections/commons-collections/3.2.2/commons-collections-3.2.2.jar:/Users/mila/.m2/repository/javax/servlet/jstl/1.2/jstl-1.2.jar:/Users/mila/.m2/repository/org/hibernate/hibernate-validator/4.3.1.Final/hibernate-validator-4.3.1.Final.jar:/Users/mila/.m2/repository/javax/validation/validation-api/1.0.0.GA/validation-api-1.0.0.GA.jar:/Users/mila/.m2/repository/org/jboss/logging/jboss-logging/3.1.0.CR2/jboss-logging-3.1.0.CR2.jar:/Users/mila/.m2/repository/javax/javaee-web-api/6.0/javaee-web-api-6.0.jar:/Users/mila/.m2/repository/org/springframework/spring-web/3.2.6.RELEASE/spring-web-3.2.6.RELEASE.jar:/Users/mila/.m2/repository/aopalliance/aopalliance/1.0/aopalliance-1.0.jar:/Users/mila/.m2/repository/org/springframework/spring-aop/3.2.6.RELEASE/spring-aop-3.2.6.RELEASE.jar:/Users/mila/.m2/repository/org/springframework/spring-beans/3.2.6.RELEASE/spring-beans-3.2.6.RELEASE.jar:/Users/mila/.m2/repository/org/springframework/spring-context/3.2.6.RELEASE/spring-context-3.2.6.RELEASE.jar:/Users/mila/.m2/repository/org/springframework/spring-expression/3.2.6.RELEASE/spring-expression-3.2.6.RELEASE.jar:/Users/mila/.m2/repository/org/springframework/spring-core/3.2.6.RELEASE/spring-core-3.2.6.RELEASE.jar:/Users/mila/.m2/repository/commons-logging/commons-logging/1.1.1/commons-logging-1.1.1.jar:/Users/mila/.m2/repository/org/apache/struts/struts2-core/2.3.20/struts2-core-2.3.20.jar:/Users/mila/.m2/repository/org/apache/struts/xwork/xwork-core/2.3.20/xwork-core-2.3.20.jar:/Users/mila/.m2/repository/org/ow2/asm/asm/5.0.2/asm-5.0.2.jar:/Users/mila/.m2/repository/org/ow2/asm/asm-commons/5.0.2/asm-commons-5.0.2.jar:/Users/mila/.m2/repository/org/ow2/asm/asm-tree/5.0.2/asm-tree-5.0.2.jar:/Users/mila/.m2/repository/org/freemarker/freemarker/2.3.19/freemarker-2.3.19.jar:/Users/mila/.m2/repository/ognl/ognl/3.0.6/ognl-3.0.6.jar:/Users/mila/.m2/repository/javassist/javassist/3.11.0.GA/javassist-3.11.0.GA.jar:/Users/mila/.m2/repository/commons-fileupload/commons-fileupload/1.3.1/commons-fileupload-1.3.1.jar:/Users/mila/.m2/repository/commons-io/commons-io/2.2/commons-io-2.2.jar:/Users/mila/.m2/repository/org/apache/struts/struts2-spring-plugin/2.3.20/struts2-spring-plugin-2.3.20.jar:/Users/mila/.m2/repository/org/apache/commons/commons-lang3/3.2/commons-lang3-3.2.jar:/Users/mila/.m2/repository/org/zeroturnaround/zt-zip/1.12/zt-zip-1.12.jar:/Users/mila/.m2/repository/org/slf4j/slf4j-api/1.6.6/slf4j-api-1.6.6.jar',
-];
+describe('parseModuleNames', () => {
+  test('handles empty input', () => {
+    expect(() => parseModuleNames('')).toThrowError(MalformedModulesSpecError);
+  });
 
-const execClassPaths = [
-  '/Users/mila/code/snyk/java-goof/./target/classes',
-  '/Users/mila/code/snyk/java-goof/todolist-core/target/classes:/Users/mila/.m2/repository/org/springframework/spring-context/3.2.6.RELEASE/spring-context-3.2.6.RELEASE.jar:/Users/mila/.m2/repository/org/springframework/spring-aop/3.2.6.RELEASE/spring-aop-3.2.6.RELEASE.jar:/Users/mila/.m2/repository/org/springframework/spring-beans/3.2.6.RELEASE/spring-beans-3.2.6.RELEASE.jar:/Users/mila/.m2/repository/org/springframework/spring-core/3.2.6.RELEASE/spring-core-3.2.6.RELEASE.jar:/Users/mila/.m2/repository/commons-logging/commons-logging/1.1.1/commons-logging-1.1.1.jar:/Users/mila/.m2/repository/org/springframework/spring-expression/3.2.6.RELEASE/spring-expression-3.2.6.RELEASE.jar:/Users/mila/.m2/repository/org/springframework/spring-orm/3.2.6.RELEASE/spring-orm-3.2.6.RELEASE.jar:/Users/mila/.m2/repository/aopalliance/aopalliance/1.0/aopalliance-1.0.jar:/Users/mila/.m2/repository/org/springframework/spring-jdbc/3.2.6.RELEASE/spring-jdbc-3.2.6.RELEASE.jar:/Users/mila/.m2/repository/org/springframework/spring-tx/3.2.6.RELEASE/spring-tx-3.2.6.RELEASE.jar:/Users/mila/.m2/repository/org/springframework/spring-aspects/3.2.6.RELEASE/spring-aspects-3.2.6.RELEASE.jar:/Users/mila/.m2/repository/org/springframework/spring-context-support/3.2.6.RELEASE/spring-context-support-3.2.6.RELEASE.jar:/Users/mila/.m2/repository/cglib/cglib/2.2.2/cglib-2.2.2.jar:/Users/mila/.m2/repository/asm/asm/3.3.1/asm-3.3.1.jar:/Users/mila/.m2/repository/org/aspectj/aspectjweaver/1.8.2/aspectjweaver-1.8.2.jar:/Users/mila/.m2/repository/c3p0/c3p0/0.9.1.2/c3p0-0.9.1.2.jar:/Users/mila/.m2/repository/org/hsqldb/hsqldb/2.3.2/hsqldb-2.3.2.jar:/Users/mila/.m2/repository/org/hibernate/hibernate-core/4.3.7.Final/hibernate-core-4.3.7.Final.jar:/Users/mila/.m2/repository/org/jboss/logging/jboss-logging/3.1.3.GA/jboss-logging-3.1.3.GA.jar:/Users/mila/.m2/repository/org/jboss/logging/jboss-logging-annotations/1.2.0.Beta1/jboss-logging-annotations-1.2.0.Beta1.jar:/Users/mila/.m2/repository/org/jboss/spec/javax/transaction/jboss-transaction-api_1.2_spec/1.0.0.Final/jboss-transaction-api_1.2_spec-1.0.0.Final.jar:/Users/mila/.m2/repository/dom4j/dom4j/1.6.1/dom4j-1.6.1.jar:/Users/mila/.m2/repository/xml-apis/xml-apis/1.0.b2/xml-apis-1.0.b2.jar:/Users/mila/.m2/repository/org/hibernate/common/hibernate-commons-annotations/4.0.5.Final/hibernate-commons-annotations-4.0.5.Final.jar:/Users/mila/.m2/repository/org/hibernate/javax/persistence/hibernate-jpa-2.1-api/1.0.0.Final/hibernate-jpa-2.1-api-1.0.0.Final.jar:/Users/mila/.m2/repository/org/javassist/javassist/3.18.1-GA/javassist-3.18.1-GA.jar:/Users/mila/.m2/repository/antlr/antlr/2.7.7/antlr-2.7.7.jar:/Users/mila/.m2/repository/org/jboss/jandex/1.1.0.Final/jandex-1.1.0.Final.jar:/Users/mila/.m2/repository/org/hibernate/hibernate-entitymanager/4.3.7.Final/hibernate-entitymanager-4.3.7.Final.jar:/Users/mila/.m2/repository/org/hibernate/javax/persistence/hibernate-jpa-2.0-api/1.0.1.Final/hibernate-jpa-2.0-api-1.0.1.Final.jar:/Users/mila/.m2/repository/commons-collections/commons-collections/3.2.2/commons-collections-3.2.2.jar',
-  '/Users/mila/code/snyk/java-goof/todolist-web-common/target/classes:/Users/mila/.m2/repository/io/github/snyk/todolist-core/1.0-SNAPSHOT/todolist-core-1.0-SNAPSHOT.jar:/Users/mila/.m2/repository/org/springframework/spring-context/3.2.6.RELEASE/spring-context-3.2.6.RELEASE.jar:/Users/mila/.m2/repository/org/springframework/spring-aop/3.2.6.RELEASE/spring-aop-3.2.6.RELEASE.jar:/Users/mila/.m2/repository/org/springframework/spring-beans/3.2.6.RELEASE/spring-beans-3.2.6.RELEASE.jar:/Users/mila/.m2/repository/org/springframework/spring-core/3.2.6.RELEASE/spring-core-3.2.6.RELEASE.jar:/Users/mila/.m2/repository/commons-logging/commons-logging/1.1.1/commons-logging-1.1.1.jar:/Users/mila/.m2/repository/org/springframework/spring-expression/3.2.6.RELEASE/spring-expression-3.2.6.RELEASE.jar:/Users/mila/.m2/repository/org/springframework/spring-orm/3.2.6.RELEASE/spring-orm-3.2.6.RELEASE.jar:/Users/mila/.m2/repository/aopalliance/aopalliance/1.0/aopalliance-1.0.jar:/Users/mila/.m2/repository/org/springframework/spring-jdbc/3.2.6.RELEASE/spring-jdbc-3.2.6.RELEASE.jar:/Users/mila/.m2/repository/org/springframework/spring-tx/3.2.6.RELEASE/spring-tx-3.2.6.RELEASE.jar:/Users/mila/.m2/repository/org/springframework/spring-aspects/3.2.6.RELEASE/spring-aspects-3.2.6.RELEASE.jar:/Users/mila/.m2/repository/org/springframework/spring-context-support/3.2.6.RELEASE/spring-context-support-3.2.6.RELEASE.jar:/Users/mila/.m2/repository/cglib/cglib/2.2.2/cglib-2.2.2.jar:/Users/mila/.m2/repository/asm/asm/3.3.1/asm-3.3.1.jar:/Users/mila/.m2/repository/org/aspectj/aspectjweaver/1.8.2/aspectjweaver-1.8.2.jar:/Users/mila/.m2/repository/c3p0/c3p0/0.9.1.2/c3p0-0.9.1.2.jar:/Users/mila/.m2/repository/org/hsqldb/hsqldb/2.3.2/hsqldb-2.3.2.jar:/Users/mila/.m2/repository/org/hibernate/hibernate-core/4.3.7.Final/hibernate-core-4.3.7.Final.jar:/Users/mila/.m2/repository/org/jboss/logging/jboss-logging-annotations/1.2.0.Beta1/jboss-logging-annotations-1.2.0.Beta1.jar:/Users/mila/.m2/repository/org/jboss/spec/javax/transaction/jboss-transaction-api_1.2_spec/1.0.0.Final/jboss-transaction-api_1.2_spec-1.0.0.Final.jar:/Users/mila/.m2/repository/dom4j/dom4j/1.6.1/dom4j-1.6.1.jar:/Users/mila/.m2/repository/xml-apis/xml-apis/1.0.b2/xml-apis-1.0.b2.jar:/Users/mila/.m2/repository/org/hibernate/common/hibernate-commons-annotations/4.0.5.Final/hibernate-commons-annotations-4.0.5.Final.jar:/Users/mila/.m2/repository/org/hibernate/javax/persistence/hibernate-jpa-2.1-api/1.0.0.Final/hibernate-jpa-2.1-api-1.0.0.Final.jar:/Users/mila/.m2/repository/org/javassist/javassist/3.18.1-GA/javassist-3.18.1-GA.jar:/Users/mila/.m2/repository/antlr/antlr/2.7.7/antlr-2.7.7.jar:/Users/mila/.m2/repository/org/jboss/jandex/1.1.0.Final/jandex-1.1.0.Final.jar:/Users/mila/.m2/repository/org/hibernate/hibernate-entitymanager/4.3.7.Final/hibernate-entitymanager-4.3.7.Final.jar:/Users/mila/.m2/repository/org/hibernate/javax/persistence/hibernate-jpa-2.0-api/1.0.1.Final/hibernate-jpa-2.0-api-1.0.1.Final.jar:/Users/mila/.m2/repository/commons-collections/commons-collections/3.2.2/commons-collections-3.2.2.jar:/Users/mila/.m2/repository/javax/javaee-web-api/6.0/javaee-web-api-6.0.jar:/Users/mila/.m2/repository/javax/servlet/jstl/1.2/jstl-1.2.jar:/Users/mila/.m2/repository/org/hibernate/hibernate-validator/4.3.1.Final/hibernate-validator-4.3.1.Final.jar:/Users/mila/.m2/repository/javax/validation/validation-api/1.0.0.GA/validation-api-1.0.0.GA.jar:/Users/mila/.m2/repository/org/jboss/logging/jboss-logging/3.1.0.CR2/jboss-logging-3.1.0.CR2.jar',
-  '/Users/mila/code/snyk/java-goof/todolist-web-struts/target/classes:/Users/mila/.m2/repository/io/github/snyk/todolist-web-common/1.0-SNAPSHOT/todolist-web-common-1.0-SNAPSHOT.jar:/Users/mila/.m2/repository/io/github/snyk/todolist-core/1.0-SNAPSHOT/todolist-core-1.0-SNAPSHOT.jar:/Users/mila/.m2/repository/org/springframework/spring-orm/3.2.6.RELEASE/spring-orm-3.2.6.RELEASE.jar:/Users/mila/.m2/repository/org/springframework/spring-jdbc/3.2.6.RELEASE/spring-jdbc-3.2.6.RELEASE.jar:/Users/mila/.m2/repository/org/springframework/spring-tx/3.2.6.RELEASE/spring-tx-3.2.6.RELEASE.jar:/Users/mila/.m2/repository/org/springframework/spring-aspects/3.2.6.RELEASE/spring-aspects-3.2.6.RELEASE.jar:/Users/mila/.m2/repository/org/springframework/spring-context-support/3.2.6.RELEASE/spring-context-support-3.2.6.RELEASE.jar:/Users/mila/.m2/repository/cglib/cglib/2.2.2/cglib-2.2.2.jar:/Users/mila/.m2/repository/asm/asm/3.3.1/asm-3.3.1.jar:/Users/mila/.m2/repository/org/aspectj/aspectjweaver/1.8.2/aspectjweaver-1.8.2.jar:/Users/mila/.m2/repository/c3p0/c3p0/0.9.1.2/c3p0-0.9.1.2.jar:/Users/mila/.m2/repository/org/hsqldb/hsqldb/2.3.2/hsqldb-2.3.2.jar:/Users/mila/.m2/repository/org/hibernate/hibernate-core/4.3.7.Final/hibernate-core-4.3.7.Final.jar:/Users/mila/.m2/repository/org/jboss/logging/jboss-logging-annotations/1.2.0.Beta1/jboss-logging-annotations-1.2.0.Beta1.jar:/Users/mila/.m2/repository/org/jboss/spec/javax/transaction/jboss-transaction-api_1.2_spec/1.0.0.Final/jboss-transaction-api_1.2_spec-1.0.0.Final.jar:/Users/mila/.m2/repository/dom4j/dom4j/1.6.1/dom4j-1.6.1.jar:/Users/mila/.m2/repository/xml-apis/xml-apis/1.0.b2/xml-apis-1.0.b2.jar:/Users/mila/.m2/repository/org/hibernate/common/hibernate-commons-annotations/4.0.5.Final/hibernate-commons-annotations-4.0.5.Final.jar:/Users/mila/.m2/repository/org/hibernate/javax/persistence/hibernate-jpa-2.1-api/1.0.0.Final/hibernate-jpa-2.1-api-1.0.0.Final.jar:/Users/mila/.m2/repository/org/javassist/javassist/3.18.1-GA/javassist-3.18.1-GA.jar:/Users/mila/.m2/repository/antlr/antlr/2.7.7/antlr-2.7.7.jar:/Users/mila/.m2/repository/org/jboss/jandex/1.1.0.Final/jandex-1.1.0.Final.jar:/Users/mila/.m2/repository/org/hibernate/hibernate-entitymanager/4.3.7.Final/hibernate-entitymanager-4.3.7.Final.jar:/Users/mila/.m2/repository/org/hibernate/javax/persistence/hibernate-jpa-2.0-api/1.0.1.Final/hibernate-jpa-2.0-api-1.0.1.Final.jar:/Users/mila/.m2/repository/commons-collections/commons-collections/3.2.2/commons-collections-3.2.2.jar:/Users/mila/.m2/repository/javax/servlet/jstl/1.2/jstl-1.2.jar:/Users/mila/.m2/repository/org/hibernate/hibernate-validator/4.3.1.Final/hibernate-validator-4.3.1.Final.jar:/Users/mila/.m2/repository/javax/validation/validation-api/1.0.0.GA/validation-api-1.0.0.GA.jar:/Users/mila/.m2/repository/org/jboss/logging/jboss-logging/3.1.0.CR2/jboss-logging-3.1.0.CR2.jar:/Users/mila/.m2/repository/javax/javaee-web-api/6.0/javaee-web-api-6.0.jar:/Users/mila/.m2/repository/org/springframework/spring-web/3.2.6.RELEASE/spring-web-3.2.6.RELEASE.jar:/Users/mila/.m2/repository/aopalliance/aopalliance/1.0/aopalliance-1.0.jar:/Users/mila/.m2/repository/org/springframework/spring-aop/3.2.6.RELEASE/spring-aop-3.2.6.RELEASE.jar:/Users/mila/.m2/repository/org/springframework/spring-beans/3.2.6.RELEASE/spring-beans-3.2.6.RELEASE.jar:/Users/mila/.m2/repository/org/springframework/spring-context/3.2.6.RELEASE/spring-context-3.2.6.RELEASE.jar:/Users/mila/.m2/repository/org/springframework/spring-expression/3.2.6.RELEASE/spring-expression-3.2.6.RELEASE.jar:/Users/mila/.m2/repository/org/springframework/spring-core/3.2.6.RELEASE/spring-core-3.2.6.RELEASE.jar:/Users/mila/.m2/repository/commons-logging/commons-logging/1.1.1/commons-logging-1.1.1.jar:/Users/mila/.m2/repository/org/apache/struts/struts2-core/2.3.20/struts2-core-2.3.20.jar:/Users/mila/.m2/repository/org/apache/struts/xwork/xwork-core/2.3.20/xwork-core-2.3.20.jar:/Users/mila/.m2/repository/org/ow2/asm/asm/5.0.2/asm-5.0.2.jar:/Users/mila/.m2/repository/org/ow2/asm/asm-commons/5.0.2/asm-commons-5.0.2.jar:/Users/mila/.m2/repository/org/ow2/asm/asm-tree/5.0.2/asm-tree-5.0.2.jar:/Users/mila/.m2/repository/org/freemarker/freemarker/2.3.19/freemarker-2.3.19.jar:/Users/mila/.m2/repository/ognl/ognl/3.0.6/ognl-3.0.6.jar:/Users/mila/.m2/repository/javassist/javassist/3.11.0.GA/javassist-3.11.0.GA.jar:/Users/mila/.m2/repository/commons-fileupload/commons-fileupload/1.3.1/commons-fileupload-1.3.1.jar:/Users/mila/.m2/repository/commons-io/commons-io/2.2/commons-io-2.2.jar:/Users/mila/.m2/repository/org/apache/struts/struts2-spring-plugin/2.3.20/struts2-spring-plugin-2.3.20.jar:/Users/mila/.m2/repository/org/apache/commons/commons-lang3/3.2/commons-lang3-3.2.jar:/Users/mila/.m2/repository/org/zeroturnaround/zt-zip/1.12/zt-zip-1.12.jar:/Users/mila/.m2/repository/org/slf4j/slf4j-api/1.6.6/slf4j-api-1.6.6.jar',
-];
+  test('throws generic error on junk input', () => {
+    expect(() => parseModuleNames('junk')).toThrowError(Error);
+  });
 
-const mergedClassPath =
-  '/Users/mila/.m2/repository/org/springframework/spring-orm/3.2.6.RELEASE/spring-orm-3.2.6.RELEASE.jar:/Users/mila/.m2/repository/aopalliance/aopalliance/1.0/aopalliance-1.0.jar:/Users/mila/.m2/repository/org/springframework/spring-beans/3.2.6.RELEASE/spring-beans-3.2.6.RELEASE.jar:/Users/mila/.m2/repository/org/springframework/spring-core/3.2.6.RELEASE/spring-core-3.2.6.RELEASE.jar:/Users/mila/.m2/repository/commons-logging/commons-logging/1.1.1/commons-logging-1.1.1.jar:/Users/mila/.m2/repository/org/springframework/spring-jdbc/3.2.6.RELEASE/spring-jdbc-3.2.6.RELEASE.jar:/Users/mila/.m2/repository/org/springframework/spring-tx/3.2.6.RELEASE/spring-tx-3.2.6.RELEASE.jar:/Users/mila/.m2/repository/org/springframework/spring-aspects/3.2.6.RELEASE/spring-aspects-3.2.6.RELEASE.jar:/Users/mila/.m2/repository/org/springframework/spring-context-support/3.2.6.RELEASE/spring-context-support-3.2.6.RELEASE.jar:/Users/mila/.m2/repository/org/springframework/spring-context/3.2.6.RELEASE/spring-context-3.2.6.RELEASE.jar:/Users/mila/.m2/repository/org/springframework/spring-aop/3.2.6.RELEASE/spring-aop-3.2.6.RELEASE.jar:/Users/mila/.m2/repository/org/springframework/spring-expression/3.2.6.RELEASE/spring-expression-3.2.6.RELEASE.jar:/Users/mila/.m2/repository/cglib/cglib/2.2.2/cglib-2.2.2.jar:/Users/mila/.m2/repository/asm/asm/3.3.1/asm-3.3.1.jar:/Users/mila/.m2/repository/org/aspectj/aspectjweaver/1.8.2/aspectjweaver-1.8.2.jar:/Users/mila/.m2/repository/c3p0/c3p0/0.9.1.2/c3p0-0.9.1.2.jar:/Users/mila/.m2/repository/org/hsqldb/hsqldb/2.3.2/hsqldb-2.3.2.jar:/Users/mila/.m2/repository/org/hibernate/hibernate-core/4.3.7.Final/hibernate-core-4.3.7.Final.jar:/Users/mila/.m2/repository/org/jboss/logging/jboss-logging/3.1.3.GA/jboss-logging-3.1.3.GA.jar:/Users/mila/.m2/repository/org/jboss/logging/jboss-logging-annotations/1.2.0.Beta1/jboss-logging-annotations-1.2.0.Beta1.jar:/Users/mila/.m2/repository/org/jboss/spec/javax/transaction/jboss-transaction-api_1.2_spec/1.0.0.Final/jboss-transaction-api_1.2_spec-1.0.0.Final.jar:/Users/mila/.m2/repository/dom4j/dom4j/1.6.1/dom4j-1.6.1.jar:/Users/mila/.m2/repository/xml-apis/xml-apis/1.0.b2/xml-apis-1.0.b2.jar:/Users/mila/.m2/repository/org/hibernate/common/hibernate-commons-annotations/4.0.5.Final/hibernate-commons-annotations-4.0.5.Final.jar:/Users/mila/.m2/repository/org/hibernate/javax/persistence/hibernate-jpa-2.1-api/1.0.0.Final/hibernate-jpa-2.1-api-1.0.0.Final.jar:/Users/mila/.m2/repository/org/javassist/javassist/3.18.1-GA/javassist-3.18.1-GA.jar:/Users/mila/.m2/repository/antlr/antlr/2.7.7/antlr-2.7.7.jar:/Users/mila/.m2/repository/org/jboss/jandex/1.1.0.Final/jandex-1.1.0.Final.jar:/Users/mila/.m2/repository/org/hibernate/hibernate-entitymanager/4.3.7.Final/hibernate-entitymanager-4.3.7.Final.jar:/Users/mila/.m2/repository/org/hibernate/javax/persistence/hibernate-jpa-2.0-api/1.0.1.Final/hibernate-jpa-2.0-api-1.0.1.Final.jar:/Users/mila/.m2/repository/commons-collections/commons-collections/3.2.2/commons-collections-3.2.2.jar:/Users/mila/.m2/repository/junit/junit/4.12/junit-4.12.jar:/Users/mila/.m2/repository/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar:/Users/mila/.m2/repository/org/springframework/spring-test/3.2.6.RELEASE/spring-test-3.2.6.RELEASE.jar:/Users/mila/.m2/repository/io/github/snyk/todolist-core/1.0-SNAPSHOT/todolist-core-1.0-SNAPSHOT.jar:/Users/mila/.m2/repository/javax/javaee-web-api/6.0/javaee-web-api-6.0.jar:/Users/mila/.m2/repository/javax/servlet/jstl/1.2/jstl-1.2.jar:/Users/mila/.m2/repository/org/hibernate/hibernate-validator/4.3.1.Final/hibernate-validator-4.3.1.Final.jar:/Users/mila/.m2/repository/javax/validation/validation-api/1.0.0.GA/validation-api-1.0.0.GA.jar:/Users/mila/.m2/repository/org/jboss/logging/jboss-logging/3.1.0.CR2/jboss-logging-3.1.0.CR2.jar:/Users/mila/.m2/repository/io/github/snyk/todolist-web-common/1.0-SNAPSHOT/todolist-web-common-1.0-SNAPSHOT.jar:/Users/mila/.m2/repository/org/springframework/spring-web/3.2.6.RELEASE/spring-web-3.2.6.RELEASE.jar:/Users/mila/.m2/repository/org/apache/struts/struts2-core/2.3.20/struts2-core-2.3.20.jar:/Users/mila/.m2/repository/org/apache/struts/xwork/xwork-core/2.3.20/xwork-core-2.3.20.jar:/Users/mila/.m2/repository/org/ow2/asm/asm/5.0.2/asm-5.0.2.jar:/Users/mila/.m2/repository/org/ow2/asm/asm-commons/5.0.2/asm-commons-5.0.2.jar:/Users/mila/.m2/repository/org/ow2/asm/asm-tree/5.0.2/asm-tree-5.0.2.jar:/Users/mila/.m2/repository/org/freemarker/freemarker/2.3.19/freemarker-2.3.19.jar:/Users/mila/.m2/repository/ognl/ognl/3.0.6/ognl-3.0.6.jar:/Users/mila/.m2/repository/javassist/javassist/3.11.0.GA/javassist-3.11.0.GA.jar:/Users/mila/.m2/repository/commons-fileupload/commons-fileupload/1.3.1/commons-fileupload-1.3.1.jar:/Users/mila/.m2/repository/commons-io/commons-io/2.2/commons-io-2.2.jar:/Users/mila/.m2/repository/org/apache/struts/struts2-spring-plugin/2.3.20/struts2-spring-plugin-2.3.20.jar:/Users/mila/.m2/repository/org/apache/commons/commons-lang3/3.2/commons-lang3-3.2.jar:/Users/mila/.m2/repository/org/zeroturnaround/zt-zip/1.12/zt-zip-1.12.jar:/Users/mila/.m2/repository/org/slf4j/slf4j-api/1.6.6/slf4j-api-1.6.6.jar';
+  test('handles empty module list', () => {
+    expect(() => parseModuleNames('<modules/>')).toHaveLength(0);
+    expect(() => parseModuleNames('<modules></modules>')).toHaveLength(0);
+  });
 
-const os = require('os');
-const describeNotWindows = os.platform() != 'win32' ? describe : describe.skip;
-const describeWindows = os.platform() == 'win32' ? describe : describe.skip;
-
-describeNotWindows('Run on all systems except Windows', async () => {
-  test('parse mvn dependency plugin results', async () => {
-    const mvnOutput = fs.readFileSync(
-      path.join(
-        __dirname,
-        '../fixtures/java-goof-mvn-dependency-plugin-output-line-feed.txt',
-      ),
-      'utf-8',
-    );
-    expect(parseMvnDependencyPluginCommandOutput(mvnOutput)).toEqual(
-      dependencyPluginClassPaths,
+  test('throws specific error on malformed input', () => {
+    expect(() => parseModuleNames(`<strings></strings>`)).toThrowError(
+      MalformedModulesSpecError,
     );
   });
 
-  test('parse mvn exec results', async () => {
-    const mvnOutput = fs.readFileSync(
-      path.join(
-        __dirname,
-        '../fixtures/java-goof-mvn-exec-output-line-feed.txt',
-      ),
-      'utf-8',
-    );
-    expect(parseMvnExecCommandOutput(mvnOutput)).toEqual(execClassPaths);
+  test('handles module list', () => {
+    expect(
+      parseModuleNames(`<strings>
+  <string>app</string>
+  <string>util</string>
+</strings>`),
+    ).toEqual(['app', 'util']);
   });
 });
 
-describeWindows('Run only on Windows', async () => {
-  test('parse mvn dependency plugin results', async () => {
-    const mvnOutput = fs.readFileSync(
-      path.join(
-        __dirname,
-        '../fixtures/java-goof-mvn-dependency-plugin-output-line-feed-and-carriage-return.txt',
-      ),
-      'utf-8',
-    );
-    expect(parseMvnDependencyPluginCommandOutput(mvnOutput)).toEqual(
-      dependencyPluginClassPaths,
-    );
+describe('MavenModule', () => {
+  test('throws on missing build directory', () => {
+    expect(
+      () => new MavenModule('base', '', 'out', new ClassPath('dep')),
+    ).toThrowError();
   });
 
-  test('parse mvn exec results', async () => {
-    const mvnOutput = fs.readFileSync(
-      path.join(
-        __dirname,
-        '../fixtures/java-goof-mvn-exec-output-line-feed-and-carriage-return.txt',
-      ),
-      'utf-8',
+  test('throws on missing output directory', () => {
+    expect(
+      () => new MavenModule('base', 'build', '', new ClassPath('dep')),
+    ).toThrowError();
+  });
+
+  test('throws on missing dependencies classpath', () => {
+    expect(
+      () => new MavenModule('base', 'build', 'out', new ClassPath('')),
+    ).toThrowError();
+  });
+
+  test('builds correct classpath', () => {
+    const module = new MavenModule(
+      'base',
+      'build',
+      'out',
+      new ClassPath('dep'),
     );
-    expect(parseMvnExecCommandOutput(mvnOutput)).toEqual(execClassPaths);
+    expect(module.getClassPath().toString()).toEqual(`dep${path.delimiter}out`);
   });
 });
 
-test('merging mvn class paths', async () => {
-  expect(mergeMvnClassPaths(dependencyPluginClassPaths)).toEqual(
-    mergedClassPath,
-  );
-});
+describe('MavenProject', () => {
+  test('throws on empty module list', () => {
+    expect(() => new MavenProject('base', [])).toThrowError();
+  });
 
-test('getMvnCommandArgsForMvnExec - gets the right mvn commands', () => {
-  const targetPath = 'pathToClasspath';
-  if (process.platform === 'win32') {
-    expect(getMvnCommandArgsForMvnExec(targetPath)).toEqual([
-      '-q',
-      'exec:exec',
-      '-Dexec.classpathScope="compile"',
-      '-Dexec.executable="cmd"',
-      '-Dexec.args="/c echo %classpath"',
-      '-f',
-      targetPath,
-    ]);
-  } else {
-    expect(getMvnCommandArgsForMvnExec(targetPath)).toEqual([
-      '-q',
-      'exec:exec',
-      '-Dexec.classpathScope="compile"',
-      '-Dexec.executable="echo"',
-      '-Dexec.args="%classpath"',
-      '-f',
-      targetPath,
-    ]);
-  }
-});
-
-test('buildFullClassPath', () => {
-  function buildPath(entries: string[]): string {
-    return entries.join(path.delimiter);
-  }
-
-  expect(buildFullClassPath(buildPath(['aaa', 'bbb']), 'ccc')).toEqual(
-    buildPath(['aaa', 'bbb', 'ccc']),
-  );
-  expect(buildFullClassPath('aaa', 'bbb')).toEqual(buildPath(['aaa', 'bbb']));
-  expect(buildFullClassPath('aaa', '')).toEqual('aaa');
-  expect(buildFullClassPath('', 'aaa')).toEqual('aaa');
-  expect(buildFullClassPath(`aaa${path.delimiter}`, '')).toEqual('aaa');
-  expect(buildFullClassPath(`aaa${path.delimiter}`, 'bbb')).toEqual(
-    buildPath(['aaa', 'bbb']),
-  );
-  expect(
-    buildFullClassPath(`aaa${path.delimiter}${path.delimiter}`, 'bbb'),
-  ).toEqual(buildPath(['aaa', 'bbb']));
-  expect(buildFullClassPath('', '')).toEqual('');
+  test('builds correct classpath', () => {
+    const module1 = new MavenModule(
+      'base1',
+      'build1',
+      'out1',
+      new ClassPath('dep1'),
+    );
+    const module2 = new MavenModule(
+      'base2',
+      'build2',
+      'out2',
+      new ClassPath('dep2'),
+    );
+    const module3 = new MavenModule(
+      'base3',
+      'build3',
+      'out3',
+      new ClassPath('dep3'),
+    );
+    const project = new MavenProject('base', [module1, module2, module3]);
+    expect(project.getClassPath().toString()).toEqual(
+      `dep1${path.delimiter}out1${path.delimiter}dep2${path.delimiter}out2${path.delimiter}dep3${path.delimiter}out3`,
+    );
+  });
 });

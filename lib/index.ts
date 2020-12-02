@@ -1,5 +1,5 @@
 import 'source-map-support/register';
-import { getClassPathFromMvn } from './mvn-wrapper';
+import { getClassPathFromMvn } from './mvn-wrapper-legacy';
 import { getClassPathFromGradle } from './gradle-wrapper';
 import { getCallGraph } from './java-wrapper';
 import { Graph } from 'graphlib';
@@ -7,15 +7,20 @@ import { timeIt, getMetrics, Metrics } from './metrics';
 import { CallGraphGenerationError, MissingTargetFolderError } from './errors';
 import { glob } from './promisified-fs-glob';
 import * as path from 'path';
+import { makeMavenProject } from './mvn-wrapper';
+import { debug } from './debug';
+import * as tmp from 'tmp';
 
-export async function getCallGraphMvn(
+tmp.setGracefulCleanup();
+
+export async function getCallGraphMvnLegacy(
   targetPath: string,
   timeout?: number,
 ): Promise<Graph> {
   try {
     const [classPath, targets] = await Promise.all([
       timeIt('getMvnClassPath', () => getClassPathFromMvn(targetPath)),
-      timeIt('getEntrypoints', () => getTargets(targetPath, 'mvn')),
+      timeIt('getEntrypoints', () => findBuildDirs(targetPath, 'mvn')),
     ]);
 
     return await timeIt('getCallGraph', () =>
@@ -30,13 +35,36 @@ export async function getCallGraphMvn(
   }
 }
 
+export async function getCallGraphMvn(
+  targetPath: string,
+  timeout?: number,
+): Promise<Graph> {
+  try {
+    const project = await makeMavenProject(targetPath);
+    const classPath = project.getClassPath();
+    const buildDirectories = await Promise.all(
+      project.modules.map((m) => m.buildDirectory),
+    );
+
+    return await timeIt('getCallGraph', () =>
+      getCallGraph(classPath, targetPath, buildDirectories, timeout),
+    );
+  } catch (e) {
+    debug(
+      `Failed to get the call graph for the Maven project in: ${targetPath}. ' +
+      'Falling back to the legacy method.`,
+    );
+    return getCallGraphMvnLegacy(targetPath, timeout);
+  }
+}
+
 export async function getCallGraphGradle(
   targetPath: string,
   timeout?: number,
 ): Promise<Graph> {
   const [classPath, targets] = await Promise.all([
     timeIt('getGradleClassPath', () => getClassPathFromGradle(targetPath)),
-    timeIt('getEntrypoints', () => getTargets(targetPath, 'gradle')),
+    timeIt('getEntrypoints', () => findBuildDirs(targetPath, 'gradle')),
   ]);
 
   return await timeIt('getCallGraph', () =>
@@ -48,7 +76,7 @@ export function runtimeMetrics(): Metrics {
   return getMetrics();
 }
 
-export async function getTargets(
+export async function findBuildDirs(
   targetPath: string,
   packageManager: 'mvn' | 'gradle',
 ): Promise<string[]> {
