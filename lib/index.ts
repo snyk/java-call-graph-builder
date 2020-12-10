@@ -10,6 +10,7 @@ import * as path from 'path';
 import { makeMavenProject } from './mvn-wrapper';
 import { debug } from './debug';
 import * as tmp from 'tmp';
+import { getCallGraphWithDeepcode } from './deepcode';
 
 tmp.setGracefulCleanup();
 
@@ -69,6 +70,13 @@ export async function getCallGraphGradle(
 
   return await timeIt('getCallGraph', () =>
     getCallGraph(classPath, targetPath, targets, timeout),
+  );
+}
+
+export async function getCallGraphDeepcode(sourceFolder:string): Promise<Graph> {
+
+  return await timeIt('getCallGraph', () =>
+    getCallGraphWithDeepcode(sourceFolder)
   );
 }
 

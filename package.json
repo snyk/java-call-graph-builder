@@ -45,7 +45,8 @@
     "temp-dir": "^2.0.0",
     "tmp": "^0.2.1",
     "tslib": "^1.9.3",
-    "xml-js": "^1.6.11"
+    "xml-js": "^1.6.11",
+    "@deepcode/tsc": "^2.0.15"
   },
   "devDependencies": {
     "@types/ci-info": "^2.0.0",
