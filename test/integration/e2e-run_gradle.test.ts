@@ -1,6 +1,5 @@
 import * as path from 'path';
 import * as fs from '../../lib/promisified-fs-glob';
-import * as os from 'os';
 import { getCallGraphGradle } from '../../lib';
 
 jest.setTimeout(60000);
@@ -15,6 +14,7 @@ test('callgraph for gradle is created', async () => {
       __dirname,
       ...'../fixtures/java-reachability-playground'.split('/'),
     ),
+    'gradle',
   );
 
   // verify tempdir was created and file written
