@@ -1,71 +1,107 @@
 import { Graph } from "graphlib";
 import { analyzeFolders, ISuggestion, startSession } from '@deepcode/tsc';
 
-
 export async function getCallGraphWithDeepcode(sourceFolder: string): Promise<Graph> {
   const reachableVulnFunctions = await getReachableFunctionFromDeepcode(sourceFolder);
+  return createFakeCallGraph(reachableVulnFunctions);
+}
 
+interface ReachableFunction {
+  fqFunctionName: string,
+  packageName: string
+}
+
+async function getReachableFunctionFromDeepcode(sourceFolder: string): Promise<Set<ReachableFunction>> {
+  // todo should I be hitting a separate URL?
+  const baseURL = 'https://www.deepcode.ai';
+  const sessionToken = process.env['DC_TOKEN'];
+  // const loginResponse = await startSession({
+  //   baseURL,
+  //   source: 'reachabilityPOC',
+  // });
+  //
+  // if (loginResponse.type === 'error') {
+  //   throw new Error("Failed to log in to Deepcode: " + loginResponse.error);
+  // }
+
+  let suggestions:ISuggestion[];
+  try {
+    // const { sessionToken, } = loginResponse.value;
+    //
+    // const sessionResponse = await checkSession({ baseURL, sessionToken });
+    // if (sessionResponse.type === 'error') {
+    //   console.log("kurwa");
+    // }
+    const bundle = await analyzeFolders(baseURL, sessionToken, false, 1, [sourceFolder]);
+    const analysisResults = bundle.analysisResults;
+    suggestions = Object.keys(analysisResults.suggestions).map(id => analysisResults.suggestions[id]);
+  } catch (error) {
+    console.log("Error querying DC API: " + error);
+    throw error;
+  }
+
+  const output = new Set<ReachableFunction>();
+  const ruleKey = "VulnerableMethodReachable";
+  for (const suggestion of suggestions) {
+    if (suggestion.rule === ruleKey) {
+      const {vulnId, methodName, packageName} = parseReachabilityMessage(suggestion.message);
+
+      console.log("Queried Deepcode and got: " + vulnId + " package: " + packageName + " method: " + methodName);
+
+      // need to replace org.apache.Cookie.get to org.apache.Cookie:get
+      const lastDotIndex = methodName.lastIndexOf(".");
+      const methodNameSanitized = methodName.substring(0, lastDotIndex) + ":" + methodName.substring(lastDotIndex+1, methodName.length);
+      output.add({fqFunctionName: methodNameSanitized, packageName});
+    }
+  }
+
+  // todo REMOVE THIS, this is just to test the flow from here across all of SNYK stack before we have reachability
+  //  working on the engine side
+  output.add({
+    fqFunctionName: "com.squareup.okhttp.internal.http.SocketConnector.connectTls",
+    packageName: "com.squareup.okhttp:okhttp"
+  });
+
+  return output;
+}
+
+function createFakeCallGraph(reachableVulnFunctions: Set<ReachableFunction>): Graph {
   const callGraph = new Graph();
 
   // we need a root node, and so we will set it to what we also use in WALA, just to make sure the
   // downstream code does not break for our fake call graph
-  const rootNode = "com.ibm.wala.FakeRootClass:fakeRootMethod";
-  callGraph.setNode(rootNode, getFakeDeepcodeGraphLabel(rootNode));
+  const rootNode = {
+    fqFunctionName: "com.ibm.wala.FakeRootClass:fakeRootMethod",
+    packageName: "com.ibm.wala"
+  };
+  callGraph.setNode(rootNode.fqFunctionName, getFakeDeepcodeGraphLabel(rootNode));
 
   reachableVulnFunctions.forEach(vulnFunction => {
-    callGraph.setNode(vulnFunction, getFakeDeepcodeGraphLabel(vulnFunction));
+    callGraph.setNode(vulnFunction.fqFunctionName, getFakeDeepcodeGraphLabel(vulnFunction));
   });
 
   return callGraph;
 }
 
-async function getReachableFunctionFromDeepcode(sourceFolder: string): Promise<Set<string>> {
-  // todo should I be hitting a separate URL?
-  const baseURL = 'https://www.deepcode.ai';
-  const loginResponse = await startSession({
-    baseURL,
-    source: 'reachabilityPOC',
-  });
-
-  if (loginResponse.type === 'error') {
-    throw new Error("Failed to log in to Deepcode: " + loginResponse.error);
+function parseReachabilityMessage(message:string): {vulnId, methodName, packageName} {
+  // example message "SNYK-JAVA-COMSQUAREUPOKHTTP-30380: Vulnerable Method org.apache.SSL.get from package org.apache:apache is reachable."
+  const regex = /^(?<vulnId>.*): Vulnerable Method (?<methodName>.*) from package (?<packageName>.*) is reachable\.$/;
+  const matchObj = regex.exec(message);
+  return {
+    vulnId: matchObj!.groups!.vulnId,
+    methodName: matchObj!.groups!.methodName,
+    packageName: matchObj!.groups!.packageName
   }
-
-  const { sessionToken, } = loginResponse.value;
-  const bundle = await analyzeFolders(baseURL, sessionToken, false, 1, [sourceFolder]);
-  const analysisResults = bundle.analysisResults;
-
-  const suggestions:ISuggestion[] = Object.keys(analysisResults.suggestions)
-    .map(id => analysisResults.suggestions[id]);
-
-  const output = new Set<string>();
-  const ruleKey = "VulnerableMethodReachable";
-  for (const suggestion of suggestions) {
-    if (suggestion.rule === ruleKey) {
-      // todo we can get package here as well
-      // todo no idea how to get keys here
-      const snykIdentifier = suggestion.tags[0];
-      const pckg = suggestion.tags[1];
-      let method = suggestion.tags[2];
-
-      console.log("Queried Deepcode and got: " + snykIdentifier + " package: " + pckg + " method: " + method);
-
-      // need to replace org.apache.Cookie.get to org.apache.Cookie:get
-      const lastDotIndex = method.lastIndexOf(".");
-      method = method.substring(0, lastDotIndex) + ":" + method.substring(lastDotIndex+1, method.length);
-      output.add(method);
-    }
-  }
-  return output;
 }
 
 // this is consistent with what we do for WALA, except we do not set the jar name, and so "reachable by package"
 // is meaningless for Deepcode
-function getFakeDeepcodeGraphLabel(functionCall: string): {} {
-  const [className, functionName] = functionCall.split(':');
+function getFakeDeepcodeGraphLabel(vulnFunc: ReachableFunction): {} {
+  const [className, functionName] = vulnFunc.fqFunctionName.split(':');
   return {
     className,
     functionName,
-    jarName: "there.is.no.jar",
+    // todo is anything here expecting .jar or is it actually package name?
+    jarName: vulnFunc.packageName,
   };
 }

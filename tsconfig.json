@@ -2,13 +2,13 @@
   "compilerOptions": {
     "outDir": "./dist",
     "pretty": true,
-    "target": "es2015",
+    "target": "es2018",
     "module": "commonjs",
     "sourceMap": true,
     "declaration": true,
     "importHelpers": true,
     "strict": true,
-    "noImplicitAny": false,
+    "noImplicitAny": false
   },
   "include": ["./lib/**/*"]
 }
