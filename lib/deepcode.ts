@@ -12,26 +12,10 @@ interface ReachableFunction {
 }
 
 async function getReachableFunctionFromDeepcode(sourceFolder: string): Promise<Set<ReachableFunction>> {
-  // todo should I be hitting a separate URL?
-  const baseURL = 'https://www.deepcode.ai';
+  const baseURL = 'http://localhost:8080';
   const sessionToken = process.env['DC_TOKEN'];
-  // const loginResponse = await startSession({
-  //   baseURL,
-  //   source: 'reachabilityPOC',
-  // });
-  //
-  // if (loginResponse.type === 'error') {
-  //   throw new Error("Failed to log in to Deepcode: " + loginResponse.error);
-  // }
-
   let suggestions:ISuggestion[];
   try {
-    // const { sessionToken, } = loginResponse.value;
-    //
-    // const sessionResponse = await checkSession({ baseURL, sessionToken });
-    // if (sessionResponse.type === 'error') {
-    //   console.log("kurwa");
-    // }
     const bundle = await analyzeFolders(baseURL, sessionToken, false, 1, [sourceFolder]);
     const analysisResults = bundle.analysisResults;
     suggestions = Object.keys(analysisResults.suggestions).map(id => analysisResults.suggestions[id]);
