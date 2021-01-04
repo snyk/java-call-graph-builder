@@ -1,5 +1,5 @@
 import { Graph } from "graphlib";
-import { analyzeFolders, ISuggestion, startSession } from '@deepcode/tsc';
+import { analyzeFolders, ISuggestion } from '@deepcode/tsc';
 
 export async function getCallGraphWithDeepcode(sourceFolder: string): Promise<Graph> {
   const reachableVulnFunctions = await getReachableFunctionFromDeepcode(sourceFolder);
@@ -38,13 +38,6 @@ async function getReachableFunctionFromDeepcode(sourceFolder: string): Promise<S
       output.add({fqFunctionName: methodNameSanitized, packageName});
     }
   }
-
-  // todo REMOVE THIS, this is just to test the flow from here across all of SNYK stack before we have reachability
-  //  working on the engine side
-  output.add({
-    fqFunctionName: "com.squareup.okhttp.internal.http.SocketConnector.connectTls",
-    packageName: "com.squareup.okhttp:okhttp"
-  });
 
   return output;
 }
