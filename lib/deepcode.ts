@@ -61,13 +61,14 @@ function createFakeCallGraph(reachableVulnFunctions: Set<ReachableFunction>): Gr
 }
 
 function parseReachabilityMessage(message:string): {vulnId, methodName, packageName} {
-  // example message "SNYK-JAVA-COMSQUAREUPOKHTTP-30380: Vulnerable Method org.apache.SSL.get from package org.apache:apache is reachable."
-  const regex = /^(?<vulnId>.*): Vulnerable Method (?<methodName>.*) from package (?<packageName>.*) is reachable\.$/;
+  // example message "SNYK-JAVA-COMSQUAREUPOKHTTP-30380: Vulnerable Method org.apache.SSL.get is reachable."
+  const regex = /^(?<vulnId>.*): Vulnerable Method (?<methodName>.*) is reachable\.$/;
   const matchObj = regex.exec(message);
   return {
     vulnId: matchObj!.groups!.vulnId,
     methodName: matchObj!.groups!.methodName,
-    packageName: matchObj!.groups!.packageName
+    // package name is no longer reported by the deepcode ontology
+    packageName: "unknown"
   }
 }
 
