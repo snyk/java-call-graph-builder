@@ -1,9 +1,30 @@
 import { Graph } from "graphlib";
 import { analyzeFolders, ISuggestion } from '@deepcode/tsc';
 
-export async function getCallGraphWithDeepcode(sourceFolder: string): Promise<Graph> {
-  const reachableVulnFunctions = await getReachableFunctionFromDeepcode(sourceFolder);
-  return createFakeCallGraph(reachableVulnFunctions);
+export async function getCallGraphWithDeepcode(
+  sourceFolder: string,
+  timeout?: number): Promise<Graph> {
+
+  if (timeout) {
+    const p = Promise.race([
+      getReachableFunctionFromDeepcode(sourceFolder),
+      new Promise((resolve, reject) => {
+        const id = setTimeout(
+          () => {
+            clearTimeout(id);
+            reject(new Error("Call Graph Creation With DC timed-out"));
+          },
+          timeout);
+      })
+    ]);
+
+    const reachableF = await p;
+    return createFakeCallGraph(reachableF as Set<ReachableFunction>);
+
+  } else {
+    const reachableVulnFunctions = await getReachableFunctionFromDeepcode(sourceFolder);
+    return createFakeCallGraph(reachableVulnFunctions);
+  }
 }
 
 interface ReachableFunction {
@@ -12,7 +33,7 @@ interface ReachableFunction {
 }
 
 async function getReachableFunctionFromDeepcode(sourceFolder: string): Promise<Set<ReachableFunction>> {
-  const baseURL = 'http://localhost:8080';
+  const baseURL = process.env['DC_API'];
   const sessionToken = process.env['DC_TOKEN'];
   let suggestions:ISuggestion[];
   try {

@@ -73,9 +73,9 @@ export async function getCallGraphGradle(
   );
 }
 
-export async function getCallGraphDeepcode(sourceFolder:string): Promise<Graph> {
+export async function getCallGraphDeepcode(sourceFolder:string, timeout?: number): Promise<Graph> {
   return await timeIt('getCallGraph', () =>
-    getCallGraphWithDeepcode(sourceFolder)
+    getCallGraphWithDeepcode(sourceFolder, timeout)
   );
 }
 
