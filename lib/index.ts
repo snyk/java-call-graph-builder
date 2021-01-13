@@ -73,11 +73,16 @@ export async function getCallGraphGradle(
   );
 }
 
-export async function getCallGraphDeepcode(sourceFolder:string, timeout?: number): Promise<Graph> {
+export async function getCallGraphDeepcode(
+  sourceFolder: string,
+  timeout?: number,
+): Promise<Graph> {
   return await timeIt('getCallGraph', () =>
-    getCallGraphWithDeepcode(sourceFolder, timeout)
+    getCallGraphWithDeepcode(sourceFolder, timeout),
   );
 }
+
+export { getExploitability } from './deepcode';
 
 export function runtimeMetrics(): Metrics {
   return getMetrics();
