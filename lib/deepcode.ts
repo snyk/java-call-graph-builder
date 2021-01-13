@@ -33,7 +33,7 @@ export async function getExploitability(
       continue;
     }
 
-    const [vulnId, status] = ruleKey.split(':');
+    const [vulnId, status] = ruleKey.split('~');
 
     if (!(vulnId in vulnsMap)) {
       vulnsMap[vulnId] = [];
