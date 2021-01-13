@@ -39,7 +39,7 @@ export async function getExploitability(
       vulnsMap[vulnId] = [];
     }
 
-    vulnsMap[vulnId].append(status);
+    vulnsMap[vulnId].push(status);
   }
 
   const result: Exploitability = {};
