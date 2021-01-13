@@ -44,7 +44,7 @@ export async function getExploitability(
 
   const result: Exploitability = {};
 
-  for (const vulnId in Object.keys(vulnsMap)) {
+  for (const vulnId of Object.keys(vulnsMap)) {
     const statuses = vulnsMap[vulnId];
 
     result[vulnId] = statuses.includes(STAR_MAYBE_EXPLOITABLE)
@@ -52,7 +52,7 @@ export async function getExploitability(
       : STAR_NOT_EXPLOITABLE;
   }
 
-  return {};
+  return result;
 }
 
 async function callDc(sourceFolder: string) {
