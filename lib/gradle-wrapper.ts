@@ -2,6 +2,7 @@ import 'source-map-support/register';
 import { execute } from './sub-process';
 import * as path from 'path';
 import { ClassPathGenerationError } from './errors';
+import { EOL } from 'os';
 
 export function getGradleCommandArgs(targetPath: string): string[] {
   const gradleArgs = [
@@ -24,7 +25,10 @@ export async function getClassPathFromGradle(
   const args = getGradleCommandArgs(targetPath);
   try {
     const output = await execute(gradlePath, args, { cwd: targetPath });
-    return output.trim();
+    const lines = output.trim().split(EOL);
+    const lastLine = lines[lines.length - 1];
+
+    return lastLine.trim();
   } catch (e) {
     console.log(e);
     throw new ClassPathGenerationError(e);
