@@ -1,8 +1,52 @@
 allprojects { everyProj ->
-  task printClasspath {
-        doFirst {
-            apply plugin: 'java'
-            println(sourceSets.main.runtimeClasspath.asPath)
+
+    task printClasspath {
+        doLast {
+            def classPath = [].toSet();
+
+            pluginManager.withPlugin('java') {
+                classPath = sourceSets.main.runtimeClasspath.asPath
+            }
+
+            if (!classPath) {
+                pluginManager.withPlugin('android') {
+                    def androidBootClasspath = android.getBootClasspath()[0]
+                    def cp = [androidBootClasspath];
+
+                    project.android.applicationVariants.all { v ->
+                        v.getCompileClasspath(null).getFiles().each {
+                            File f ->
+                                cp.add(f.getAbsolutePath())
+                        }
+                        v.javaCompile.classpath.getFiles().each {
+                            f -> cp.add(f)
+                        }
+
+                        cp.add(v.javaCompile.destinationDir.getAbsolutePath())
+                    }
+                    classPath = cp.join(":")
+                }
+            }
+
+            /*
+            the `snykReachabilityClasspath` can be declared using a `ext` block
+            in the projects build script
+
+            e.g for java:
+
+            ext {
+                snykReachabilityClasspath = sourceSets.main.compileClasspath.asPath
+            }
+
+            It requires a path formatted string, e.g:
+
+
+             */
+            if (!classPath && project.hasProperty('snykReachabilityClasspath')) {
+                classPath = project.snykReachabilityClasspath
+            }
+
+            if (classPath) println(classPath)
         }
     }
-  }
+}
