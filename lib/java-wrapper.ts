@@ -1,7 +1,7 @@
 import 'source-map-support/register';
 
 import * as jszip from 'jszip';
-import { Graph } from 'graphlib';
+import { Graph } from '@snyk/graphlib';
 import * as path from 'path';
 import * as config from './config';
 

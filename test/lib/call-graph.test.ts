@@ -2,7 +2,7 @@ import { buildCallGraph } from '../../lib/call-graph';
 import { promisify } from 'util';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as graphlib from 'graphlib';
+import * as graphlib from '@snyk/graphlib';
 
 const readFile = promisify(fs.readFile);
 

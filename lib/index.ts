@@ -2,7 +2,7 @@ import 'source-map-support/register';
 import { getClassPathFromMvn } from './mvn-wrapper-legacy';
 import { getClassPathFromGradle } from './gradle-wrapper';
 import { getCallGraph } from './java-wrapper';
-import { Graph } from 'graphlib';
+import { Graph } from '@snyk/graphlib';
 import { timeIt, getMetrics, Metrics } from './metrics';
 import { CallGraphGenerationError, MissingTargetFolderError } from './errors';
 import { glob } from './promisified-fs-glob';
