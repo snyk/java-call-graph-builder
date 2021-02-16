@@ -2,8 +2,12 @@ import 'source-map-support/register';
 import { execute } from './sub-process';
 import * as path from 'path';
 import { ClassPathGenerationError } from './errors';
+import * as os from 'os';
 
-export function getGradleCommandArgs(targetPath: string, initScript: string): string[] {
+export function getGradleCommandArgs(
+  targetPath: string,
+  initScript: string | null,
+): string[] {
   const gradleArgs = [
     'printClasspath',
     '-I',
@@ -14,7 +18,7 @@ export function getGradleCommandArgs(targetPath: string, initScript: string): st
     gradleArgs.push('-p', targetPath);
   }
   if (initScript) {
-    gradleArgs.push('--init-script', initScript)
+    gradleArgs.push('--init-script', initScript);
   }
 
   return gradleArgs;
@@ -22,13 +26,16 @@ export function getGradleCommandArgs(targetPath: string, initScript: string): st
 
 export async function getClassPathFromGradle(
   targetPath: string,
-  initScript: string,
+  initScript: string | null,
   gradlePath: string,
 ): Promise<string> {
   const args = getGradleCommandArgs(targetPath, initScript);
   try {
     const output = await execute(gradlePath, args, { cwd: targetPath });
-    return output.trim();
+    return output
+      .trim()
+      .split(os.EOL)
+      .slice(-1)[0]; // protect against the init script printing to stdout
   } catch (e) {
     console.log(e);
     throw new ClassPathGenerationError(e);
