@@ -60,7 +60,7 @@ export async function getCallGraphMvn(
 
 export async function getCallGraphGradle(
   targetPath: string,
-  initScript: string,
+  initScript: string | null,
   gradlePath = 'gradle',
   timeout?: number,
 ): Promise<Graph> {
