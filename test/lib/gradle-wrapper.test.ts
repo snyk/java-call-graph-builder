@@ -1,6 +1,7 @@
 import { getGradleCommandArgs } from '../../lib/gradle-wrapper';
 
 import * as path from 'path';
+import { platform } from 'os';
 
 test('get right args for gradle command', async () => {
   expect(
@@ -25,5 +26,26 @@ test('get right args for gradle command without init script', async () => {
     '-q',
     '-p',
     'directory_name',
+  ]);
+});
+
+test('get right args for gradle command with configuration attributes', async () => {
+  const isWin = /^win/.test(platform());
+  const quot = isWin ? '"' : "'";
+
+  expect(
+    getGradleCommandArgs(
+      'directory_name',
+      undefined,
+      'buildtype:release,usage:java-runtime,backend:prod',
+    ),
+  ).toEqual([
+    'printClasspath',
+    '-I',
+    path.join(__dirname, '../../bin/init.gradle'),
+    '-q',
+    '-p',
+    'directory_name',
+    `-PconfAttrs=${quot}buildtype:release,usage:java-runtime,backend:prod${quot}`,
   ]);
 });

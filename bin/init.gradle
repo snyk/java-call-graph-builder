@@ -24,6 +24,14 @@ allprojects { everyProj ->
 
                         cp.add(v.javaCompile.destinationDir.getAbsolutePath())
                     }
+
+                    // apply config-attributes in classpath recovery
+                    if (project.hasProperty('confAttrs')) {
+                        def confAttrSpec = confAttrs.toLowerCase().split(',').collectEntries { [(it.split(':')[0]) : it.split(':')[1]] }
+
+                        cp.unique().removeIf { (it.toLowerCase() ==~ /.*${confAttrSpec['backend']}(?!.*${confAttrSpec['buildtype']}).*/) }
+                    }
+                    
                     classPath = cp.join(":")
                 }
             }

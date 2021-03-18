@@ -1,12 +1,13 @@
 import 'source-map-support/register';
 import { execute } from './sub-process';
 import * as path from 'path';
+import { EOL, platform } from 'os';
 import { ClassPathGenerationError } from './errors';
-import { EOL } from 'os';
 
 export function getGradleCommandArgs(
   targetPath: string,
   initScript?: string,
+  confAttrs?: string,
 ): string[] {
   const gradleArgs = [
     'printClasspath',
@@ -20,6 +21,12 @@ export function getGradleCommandArgs(
   if (initScript) {
     gradleArgs.push('--init-script', initScript);
   }
+  if (confAttrs) {
+    const isWin = /^win/.test(platform());
+    const quot = isWin ? '"' : "'";
+
+    gradleArgs.push(`-PconfAttrs=${quot}${confAttrs}${quot}`);
+  }
 
   return gradleArgs;
 }
@@ -28,8 +35,9 @@ export async function getClassPathFromGradle(
   targetPath: string,
   gradlePath: string,
   initScript?: string,
+  confAttrs?: string,
 ): Promise<string> {
-  const args = getGradleCommandArgs(targetPath, initScript);
+  const args = getGradleCommandArgs(targetPath, initScript, confAttrs);
   try {
     const output = await execute(gradlePath, args, { cwd: targetPath });
     const lines = output.trim().split(EOL);
