@@ -63,7 +63,7 @@ commands:
     description: Install gradle
     steps:
       - run: |
-          choco install gradle
+          choco install gradle --version=7.0
   install_sdkman:
     description: Install SDKMAN
     steps:

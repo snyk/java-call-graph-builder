@@ -1,6 +1,6 @@
 ![Snyk logo](https://snyk.io/style/asset/logo/snyk-print.svg)
 
-***
+*** AAA
 
 [![Known Vulnerabilities](https://snyk.io/test/github/snyk/java-call-graph-builder/badge.svg?targetFile=package.json)](https://snyk.io/test/github/snyk/java-call-graph-builder?targetFile=package.json)
 
