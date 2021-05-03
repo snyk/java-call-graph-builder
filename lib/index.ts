@@ -16,10 +16,13 @@ tmp.setGracefulCleanup();
 export async function getCallGraphMvnLegacy(
   targetPath: string,
   timeout?: number,
+  customMavenArgs?: string[],
 ): Promise<Graph> {
   try {
     const [classPath, targets] = await Promise.all([
-      timeIt('getMvnClassPath', () => getClassPathFromMvn(targetPath)),
+      timeIt('getMvnClassPath', () =>
+        getClassPathFromMvn(targetPath, customMavenArgs),
+      ),
       timeIt('getEntrypoints', () => findBuildDirs(targetPath, 'mvn')),
     ]);
 
@@ -38,9 +41,10 @@ export async function getCallGraphMvnLegacy(
 export async function getCallGraphMvn(
   targetPath: string,
   timeout?: number,
+  customMavenArgs?: string[],
 ): Promise<Graph> {
   try {
-    const project = await makeMavenProject(targetPath);
+    const project = await makeMavenProject(targetPath, customMavenArgs);
     const classPath = project.getClassPath();
     const buildDirectories = await Promise.all(
       project.modules.map((m) => m.buildDirectory),
@@ -54,7 +58,7 @@ export async function getCallGraphMvn(
       `Failed to get the call graph for the Maven project in: ${targetPath}. ' +
       'Falling back to the legacy method.`,
     );
-    return getCallGraphMvnLegacy(targetPath, timeout);
+    return getCallGraphMvnLegacy(targetPath, timeout, customMavenArgs);
   }
 }
 
