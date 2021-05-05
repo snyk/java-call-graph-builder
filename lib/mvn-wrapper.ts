@@ -44,29 +44,49 @@ function runCommand(projectDirectory: string, args: string[]): Promise<string> {
 async function evaluateExpression(
   projectDirectory: string,
   expression: string,
+  customMavenArgs: string[] = [],
 ): Promise<string> {
   return await withOutputToTemporaryFile(async (outputFile) => {
     await runCommand(projectDirectory, [
       'help:evaluate',
       `-Dexpression="${expression}"`,
       `-Doutput=${outputFile}`,
+      ...customMavenArgs,
     ]);
   });
 }
 
-export async function getBuildDir(baseDir: string): Promise<string> {
-  return await evaluateExpression(baseDir, 'project.build.directory');
+export async function getBuildDir(
+  baseDir: string,
+  customMavenArgs?: string[],
+): Promise<string> {
+  return await evaluateExpression(
+    baseDir,
+    'project.build.directory',
+    customMavenArgs,
+  );
 }
 
-export async function getOutputDir(baseDir: string): Promise<string> {
-  return await evaluateExpression(baseDir, 'project.build.outputDirectory');
+export async function getOutputDir(
+  baseDir: string,
+  customMavenArgs?: string[],
+): Promise<string> {
+  return await evaluateExpression(
+    baseDir,
+    'project.build.outputDirectory',
+    customMavenArgs,
+  );
 }
 
-export async function getDepsClassPath(baseDir: string): Promise<ClassPath> {
+export async function getDepsClassPath(
+  baseDir: string,
+  customMavenArgs: string[] = [],
+): Promise<ClassPath> {
   const classPath = await withOutputToTemporaryFile(async (outputFile) => {
     await runCommand(baseDir, [
       'dependency:build-classpath',
       `-Dmdep.outputFile=${outputFile}`,
+      ...customMavenArgs,
     ]);
   });
   return new ClassPath(classPath);
@@ -146,19 +166,29 @@ export class MavenProject {
 
 // Factories that deal with the low level details
 
-export async function makeMavenModule(baseDir: string): Promise<MavenModule> {
-  const buildDir = await getBuildDir(baseDir);
-  const outputDir = await getOutputDir(baseDir);
+export async function makeMavenModule(
+  baseDir: string,
+  args?: string[],
+): Promise<MavenModule> {
+  const buildDir = await getBuildDir(baseDir, args);
+  const outputDir = await getOutputDir(baseDir, args);
   const depsClassPath = await timeIt('getMvnClassPath', async () => {
-    return await getDepsClassPath(baseDir);
+    return await getDepsClassPath(baseDir, args);
   });
   return new MavenModule(baseDir, buildDir, outputDir, depsClassPath);
 }
 
-export async function makeMavenProject(baseDir: string): Promise<MavenProject> {
-  const modulesXml = await evaluateExpression(baseDir, 'project.modules');
+export async function makeMavenProject(
+  baseDir: string,
+  customMavenArgs?: string[],
+): Promise<MavenProject> {
+  const modulesXml = await evaluateExpression(
+    baseDir,
+    'project.modules',
+    customMavenArgs,
+  );
   const moduleNames = parseModuleNames(modulesXml);
-  const modules = [await makeMavenModule(baseDir)];
+  const modules = [await makeMavenModule(baseDir, customMavenArgs)];
   const submodules = await Promise.all(
     moduleNames.map((name) => makeMavenModule(path.join(baseDir, name))),
   );
