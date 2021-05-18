@@ -66,11 +66,12 @@ export async function getCallGraphGradle(
   targetPath: string,
   gradlePath = 'gradle',
   initScript?: string,
+  confAttrs?: string,
   timeout?: number,
 ): Promise<Graph> {
   const [classPath, targets] = await Promise.all([
     timeIt('getGradleClassPath', () =>
-      getClassPathFromGradle(targetPath, gradlePath, initScript),
+      getClassPathFromGradle(targetPath, gradlePath, initScript, confAttrs),
     ),
     timeIt('getEntrypoints', () => findBuildDirs(targetPath, 'gradle')),
   ]);

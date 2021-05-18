@@ -13,7 +13,29 @@ allprojects { everyProj ->
                     def androidBootClasspath = android.getBootClasspath()[0]
                     def cp = [androidBootClasspath];
 
+                    def confAttrSpec = [:]
+                    def configuredDimensionList = []
+                    if (project.hasProperty('confAttrs')) {
+                        confAttrSpec = confAttrs.toLowerCase().split(',').collectEntries { [(it.split(':')[0]) : it.split(':')[1]] }
+                        configuredDimensionList = android.flavorDimensionList.findAll { confAttrSpec[it] }
+                    }
+
                     project.android.applicationVariants.all { v ->
+                        // remove classpath for unused buildTypes
+                        if (confAttrSpec['buildtype'] && v.buildType.getName() != confAttrSpec['buildtype']) {
+                           return
+                        }
+
+                        // remove classpath for unused dimensions
+                        if (configuredDimensionList) {
+                          def usedFlavors = configuredDimensionList.findAll {
+                             v.flavorName.toLowerCase() == confAttrSpec[it]
+                          }
+                          if (!usedFlavors) {
+                              return;
+                          }
+                        }
+
                         v.getCompileClasspath(null).getFiles().each {
                             File f ->
                                 cp.add(f.getAbsolutePath())
