@@ -76,6 +76,9 @@ export async function getCallGraphGradle(
     timeIt('getEntrypoints', () => findBuildDirs(targetPath, 'gradle')),
   ]);
 
+  debug(`got class path: ${classPath}`);
+  debug(`got targets: ${targets}`);
+
   return await timeIt('getCallGraph', () =>
     getCallGraph(classPath, targetPath, targets, timeout),
   );
