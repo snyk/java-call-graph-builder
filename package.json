@@ -37,7 +37,7 @@
     "ci-info": "^2.0.0",
     "debug": "^4.1.1",
     "glob": "^7.1.6",
-    "jszip": "^3.2.2",
+    "jszip": "^3.7.0",
     "needle": "^2.3.3",
     "progress": "^2.0.3",
     "snyk-config": "^4.0.0-rc.2",
