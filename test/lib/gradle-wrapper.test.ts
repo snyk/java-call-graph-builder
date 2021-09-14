@@ -4,12 +4,15 @@ import * as path from 'path';
 import { platform } from 'os';
 
 test('get right args for gradle command', async () => {
-  expect(
-    getGradleCommandArgs('directory_name', 'some_script.gradle.kts'),
-  ).toEqual([
+  const commandArgs = getGradleCommandArgs(
+    'directory_name',
+    'some_script.gradle.kts',
+  );
+  const initGradlePath = commandArgs[2]; // Contains a temporary path
+  expect(commandArgs).toEqual([
     'printClasspath',
     '-I',
-    path.join(__dirname, '../../bin/init.gradle'),
+    initGradlePath,
     '-q',
     '-p',
     'directory_name',
@@ -19,10 +22,12 @@ test('get right args for gradle command', async () => {
 });
 
 test('get right args for gradle command without init script', async () => {
-  expect(getGradleCommandArgs('directory_name')).toEqual([
+  const commandArgs = getGradleCommandArgs('directory_name');
+  const initGradlePath = commandArgs[2]; // Contains a temporary path
+  expect(commandArgs).toEqual([
     'printClasspath',
     '-I',
-    path.join(__dirname, '../../bin/init.gradle'),
+    initGradlePath,
     '-q',
     '-p',
     'directory_name',
@@ -33,16 +38,17 @@ test('get right args for gradle command with configuration attributes', async ()
   const isWin = /^win/.test(platform());
   const quot = isWin ? '"' : "'";
 
-  expect(
-    getGradleCommandArgs(
-      'directory_name',
-      undefined,
-      'buildtype:release,usage:java-runtime,backend:prod',
-    ),
-  ).toEqual([
+  const commandArgs = getGradleCommandArgs(
+    'directory_name',
+    undefined,
+    'buildtype:release,usage:java-runtime,backend:prod',
+  );
+  const initGradlePath = commandArgs[2]; // Contains a temporary path
+
+  expect(commandArgs).toEqual([
     'printClasspath',
     '-I',
-    path.join(__dirname, '../../bin/init.gradle'),
+    initGradlePath,
     '-q',
     '-p',
     'directory_name',
