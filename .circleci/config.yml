@@ -6,7 +6,7 @@ orbs:
 defaults: &defaults_unix
   resource_class: small
   docker:
-    - image: node:12
+    - image: node:14
   working_directory: ~/snyk-java-call-graph-builder
 
 windows_defaults: &defaults_windows
@@ -107,7 +107,7 @@ jobs:
   test-unit-unix:
     <<: *defaults_unix
     docker:
-      - image: circleci/node:12
+      - image: circleci/node:14
     steps:
       - checkout
       - setup_remote_docker
@@ -119,7 +119,7 @@ jobs:
   test-integration-unix:
     <<: *defaults_unix
     docker:
-      - image: circleci/node:12
+      - image: circleci/node:14
     steps:
       - checkout
       - setup_remote_docker
