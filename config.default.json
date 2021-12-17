@@ -1,5 +1,5 @@
 {
-  "CALL_GRAPH_GENERATOR_URL": "https://storage.googleapis.com/snyk-java-callgraph-generator/W3jTdXePWDEk7sZmaxNxgDAPCXnzFa6AWsvgeEN7yg/callgraph-generator-1.6.2-jar-with-dependencies.jar",
-  "CALL_GRAPH_GENERATOR_CHECKSUM": "3834f878ab55106d7bac6a31a10e4518c7e3bd399698e47fa56ef6690e15bd44",
+  "CALL_GRAPH_GENERATOR_URL": "https://storage.googleapis.com/snyk-java-callgraph-generator/W3jTdXePWDEk7sZmaxNxgDAPCXnzFa6AWsvgeEN7yg/callgraph-generator-1.6.3-jar-with-dependencies.jar",
+  "CALL_GRAPH_GENERATOR_CHECKSUM": "41fb2095d63302c1c8eab7a3392185af0845b995d045156931eeb612ca173134",
   "_COMMENT": "use sha256 to generate CALL_GRAPH_GENERATOR_CHECKSUM"
 }
