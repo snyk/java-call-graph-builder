@@ -2,6 +2,7 @@ version: 2.1
 
 orbs:
   win: circleci/windows@2.2.0
+  prodsec: snyk/prodsec-orb@1.0
 
 defaults: &defaults_unix
   resource_class: small
@@ -183,6 +184,12 @@ workflows:
   version: 2
   test_and_release:
     jobs:
+      - prodsec/secrets-scan:
+          name: Scan repository for secrets
+          context:
+            - snyk-bot-slack
+          channel: os-team-managed-alerts
+
       - install:
           name: Install
           context: nodejs-install
