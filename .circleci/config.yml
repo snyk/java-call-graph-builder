@@ -219,26 +219,14 @@ workflows:
           context: nodejs-install
           requires:
             - Install
-          filters:
-            branches:
-              ignore:
-                - master
       - test-integration-unix:
           name: Integration Tests
           context: nodejs-install
           requires:
             - Install
-          filters:
-            branches:
-              ignore:
-                - master
       - test-unit-windows:
           name: Unit Tests Windows
           context: nodejs-install
-          filters:
-            branches:
-              ignore:
-                - master
 # CircleCI struggles to complete gradle integration test on Windows,
 # while it works perfectly when SSHed into the machine. Therefore skip of
 # the test on platform feels better than skip of the whole gradle
@@ -253,6 +241,11 @@ workflows:
       - release:
           name: Release to GitHub
           context: nodejs-lib-release
+          requires:
+            - Scan repository for secrets
+            - Unit Tests
+            - Integration Tests
+            - Unit Tests Windows
           filters:
             branches:
               only:
