@@ -36,7 +36,7 @@
     "@snyk/graphlib": "2.1.9-patch.3",
     "ci-info": "^2.0.0",
     "debug": "^4.1.1",
-    "glob": "^7.1.6",
+    "glob": "^9.0.0",
     "jszip": "^3.7.0",
     "needle": "^2.3.3",
     "progress": "^2.0.3",
